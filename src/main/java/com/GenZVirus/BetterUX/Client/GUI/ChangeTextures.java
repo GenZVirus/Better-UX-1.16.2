@@ -29,6 +29,7 @@ public class ChangeTextures extends Screen{
 			GenZVirus.field_230693_o_ = false;
 			XMLFileJava.checkFileAndMake();
 			XMLFileJava.editElement("Texture", "genzvirus");
+			XMLFileJava.load();
 		});
 		
 		Zetta = new Button(mc.getMainWindow().getScaledWidth() / 2 + 5, mc.getMainWindow().getScaledHeight() / 2 - 5, 100, 20, new TranslationTextComponent("Zetta"), (x) -> {
@@ -36,6 +37,7 @@ public class ChangeTextures extends Screen{
 			Zetta.field_230693_o_ = false;
 			XMLFileJava.checkFileAndMake();
 			XMLFileJava.editElement("Texture", "zetta");
+			XMLFileJava.load();
 		});
 		XMLFileJava.checkFileAndMake();
 		String texture = XMLFileJava.readElement("Texture");

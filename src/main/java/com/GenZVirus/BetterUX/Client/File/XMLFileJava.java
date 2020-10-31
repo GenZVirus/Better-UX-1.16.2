@@ -18,6 +18,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import com.GenZVirus.BetterUX.Client.GUI.BetterOverlay;
+
 import net.minecraftforge.client.gui.ForgeIngameGui;
 
 public class XMLFileJava {
@@ -36,6 +38,9 @@ public class XMLFileJava {
 	private static final int default_AirBarPosY = -ForgeIngameGui.left_height - 25;
 	private static final int default_ExpBarPosX = -91;
 	private static final int default_ExpBarPosY = -ForgeIngameGui.left_height;
+	private static final int default_BossBarPosX = -160;
+	private static final int default_BossBarPosY = 0;
+	private static final String default_Enabled_or_Disabled = "enabled";
 	private static final String default_Texture = "genzvirus";
 
 	public static String default_xmlFilePath = "betterux/settings.xml";
@@ -127,10 +132,25 @@ public class XMLFileJava {
 			expBarPosY.appendChild(document.createTextNode(Integer.toString(default_ExpBarPosY)));
 			root.appendChild(expBarPosY);
 
-			// EXP Y position
+			// Texture
 			Element texture = document.createElement("Texture");
 			texture.appendChild(document.createTextNode(default_Texture));
 			root.appendChild(texture);
+
+			// EXP Y position
+			Element bossBarPosX = document.createElement("BossBarPosX");
+			bossBarPosX.appendChild(document.createTextNode(Integer.toString(default_BossBarPosX)));
+			root.appendChild(bossBarPosX);
+
+			// EXP Y position
+			Element bossBarPosY = document.createElement("BossBarPosY");
+			bossBarPosY.appendChild(document.createTextNode(Integer.toString(default_BossBarPosY)));
+			root.appendChild(bossBarPosY);
+
+			// Enabled or Disabled
+			Element enabled_or_disabled = document.createElement("Enabled_Disabled");
+			enabled_or_disabled.appendChild(document.createTextNode(default_Enabled_or_Disabled));
+			root.appendChild(enabled_or_disabled);
 
 			// create the xml file
 			// transform the DOM Object to an XML File
@@ -249,7 +269,10 @@ public class XMLFileJava {
 		XMLFileJava.editElement("AirBarPosY", Integer.toString(default_AirBarPosY));
 		XMLFileJava.editElement("ExpBarPosX", Integer.toString(default_ExpBarPosX));
 		XMLFileJava.editElement("ExpBarPosY", Integer.toString(default_ExpBarPosY));
+		XMLFileJava.editElement("BossBarPosX", Integer.toString(default_BossBarPosX));
+		XMLFileJava.editElement("BossBarPosY", Integer.toString(default_BossBarPosY));
 		XMLFileJava.editElement("Texture", default_Texture);
+		XMLFileJava.editElement("Enabled_Disabled", default_Enabled_or_Disabled);
 	}
 
 	private static void resetElement(String elementTag) {
@@ -283,7 +306,58 @@ public class XMLFileJava {
 			XMLFileJava.editElement("ExpBarPosY", Integer.toString(default_ExpBarPosY));
 		} else if (elementTag.contentEquals("Texture")) {
 			XMLFileJava.editElement("Texture", default_Texture);
+		} else if (elementTag.contentEquals("BossBarPosX")) {
+			XMLFileJava.editElement("BossBarPosX", Integer.toString(default_BossBarPosX));
+		} else if (elementTag.contentEquals("BossBarPosY")) {
+			XMLFileJava.editElement("BossBarPosY", Integer.toString(default_BossBarPosY));
+		} else if (elementTag.contentEquals("Enabled_Disabled")) {
+			XMLFileJava.editElement("Enabled_Disabled", default_Enabled_or_Disabled);
 		}
+	}
+	
+	public static void load() {
+		checkFileAndMake();
+		BetterOverlay.LeftShieldPosX = Integer.parseInt(XMLFileJava.readElement("LeftShieldPosX"));
+		BetterOverlay.LeftShieldPosY = Integer.parseInt(XMLFileJava.readElement("LeftShieldPosY"));
+		BetterOverlay.RightShieldPosX = Integer.parseInt(XMLFileJava.readElement("RightShieldPosX"));
+		BetterOverlay.RightShieldPosY = Integer.parseInt(XMLFileJava.readElement("RightShieldPosY"));
+		BetterOverlay.HealthBarPosX = Integer.parseInt(XMLFileJava.readElement("HealthBarPosX"));
+		BetterOverlay.HealthBarPosY = Integer.parseInt(XMLFileJava.readElement("HealthBarPosY"));
+		BetterOverlay.FirePosX = Integer.parseInt(XMLFileJava.readElement("FirePosX"));
+		BetterOverlay.FirePosY = Integer.parseInt(XMLFileJava.readElement("FirePosY"));
+		BetterOverlay.FoodBarPosX = Integer.parseInt(XMLFileJava.readElement("FoodBarPosX"));
+		BetterOverlay.FoodBarPosY = Integer.parseInt(XMLFileJava.readElement("FoodBarPosY"));
+		BetterOverlay.AirBarPosX = Integer.parseInt(XMLFileJava.readElement("AirBarPosX"));
+		BetterOverlay.AirBarPosY = Integer.parseInt(XMLFileJava.readElement("AirBarPosY"));
+		BetterOverlay.ExpBarPosX = Integer.parseInt(XMLFileJava.readElement("ExpBarPosX"));
+		BetterOverlay.ExpBarPosY = Integer.parseInt(XMLFileJava.readElement("ExpBarPosY"));
+		BetterOverlay.Texture = XMLFileJava.readElement("Texture");
+		BetterOverlay.BossBarPosX = Integer.parseInt(XMLFileJava.readElement("BossBarPosX"));
+		BetterOverlay.BossBarPosY = Integer.parseInt(XMLFileJava.readElement("BossBarPosY"));
+		BetterOverlay.Enabled_Disabled = XMLFileJava.readElement("Enabled_Disabled");
+		BetterOverlay.updatePositions();
+	}
+	
+	public static void save() {
+		checkFileAndMake();
+		XMLFileJava.editElement("LeftShieldPosX", Integer.toString(BetterOverlay.LeftShieldPosX));
+		XMLFileJava.editElement("LeftShieldPosY", Integer.toString(BetterOverlay.LeftShieldPosY));
+		XMLFileJava.editElement("RightShieldPosX", Integer.toString(BetterOverlay.RightShieldPosX));
+		XMLFileJava.editElement("RightShieldPosY", Integer.toString(BetterOverlay.RightShieldPosY));
+		XMLFileJava.editElement("HealthBarPosX", Integer.toString(BetterOverlay.HealthBarPosX));
+		XMLFileJava.editElement("HealthBarPosY", Integer.toString(BetterOverlay.HealthBarPosY));
+		XMLFileJava.editElement("FirePosX", Integer.toString(BetterOverlay.FirePosX));
+		XMLFileJava.editElement("FirePosY", Integer.toString(BetterOverlay.FirePosY));
+		XMLFileJava.editElement("FoodBarPosX", Integer.toString(BetterOverlay.FoodBarPosX));
+		XMLFileJava.editElement("FoodBarPosY", Integer.toString(BetterOverlay.FoodBarPosY));
+		XMLFileJava.editElement("AirBarPosX", Integer.toString(BetterOverlay.AirBarPosX));
+		XMLFileJava.editElement("AirBarPosY", Integer.toString(BetterOverlay.AirBarPosY));
+		XMLFileJava.editElement("ExpBarPosX", Integer.toString(BetterOverlay.ExpBarPosX));
+		XMLFileJava.editElement("ExpBarPosY", Integer.toString(BetterOverlay.ExpBarPosY));
+		XMLFileJava.editElement("Texture", BetterOverlay.Texture);
+		XMLFileJava.editElement("BossBarPosX", Integer.toString(BetterOverlay.BossBarPosX));
+		XMLFileJava.editElement("BossBarPosY", Integer.toString(BetterOverlay.BossBarPosY));
+		XMLFileJava.editElement("Enabled_Disabled", BetterOverlay.Enabled_Disabled);
 	}
 
 }

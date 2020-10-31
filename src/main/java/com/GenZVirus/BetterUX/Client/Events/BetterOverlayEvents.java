@@ -16,8 +16,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.ClientBossInfo;
 import net.minecraft.client.gui.screen.ConfirmOpenLinkScreen;
-import net.minecraft.client.gui.screen.IngameMenuScreen;
+import net.minecraft.client.gui.screen.OptionsScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
@@ -32,7 +33,9 @@ import net.minecraftforge.client.event.GuiScreenEvent.MouseReleasedEvent;
 import net.minecraftforge.client.event.RenderBlockOverlayEvent;
 import net.minecraftforge.client.event.RenderBlockOverlayEvent.OverlayType;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent.BossInfo;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
@@ -43,9 +46,15 @@ public class BetterOverlayEvents {
 	private static Minecraft mc = Minecraft.getInstance();
 	private static boolean mousePressed = false;
 	private static int cooldown = 0;
+	public static float fading = 1.0F;
+	public static boolean increase = false;
 
+	public static int mainWindowWidth = 0;
+	public static int mainWindowHeight = 0;
+	
 	@SubscribeEvent(receiveCanceled = true)
 	public static void Overlay(RenderGameOverlayEvent.Pre event) {
+		if(BetterOverlay.Enabled_Disabled.contentEquals("disabled")) return;
 		if (event.getType() == RenderGameOverlayEvent.ElementType.HEALTH) {
 			event.setCanceled(true);
 			BetterOverlay.renderHealth();
@@ -64,35 +73,50 @@ public class BetterOverlayEvents {
 		}
 		if (event.getType() == RenderGameOverlayEvent.ElementType.AIR) {
 			event.setCanceled(true);
-			BetterOverlay.renderWaterBreathing();
+			BetterOverlay.renderAirBar();
 		}
 		if (event.getType() == RenderGameOverlayEvent.ElementType.HEALTHMOUNT) {
 			event.setCanceled(true);
 		}
 		if (event.getType() == RenderGameOverlayEvent.ElementType.HEALTHMOUNT) {
 			event.setCanceled(true);
+		}
+		if (event.getType() == RenderGameOverlayEvent.ElementType.BOSSINFO) {
+			event.setCanceled(true);
+			ClientBossInfo bossInfo = ((BossInfo) event).getBossInfo();
+			BetterOverlay.renderBossBar(bossInfo);
 		}
 	}
 
 	@SubscribeEvent(receiveCanceled = true)
 	public static void FireOverlay(RenderBlockOverlayEvent event) {
+		if(BetterOverlay.Enabled_Disabled.contentEquals("disabled")) return;
 		if (event.getOverlayType() == OverlayType.FIRE) {
 			event.setCanceled(true);
 		}
 	}
+	
+	@SubscribeEvent
+	public static void onPlayerLogging(PlayerLoggedInEvent event) {
+		XMLFileJava.load();
+	}
 
 	@SubscribeEvent
 	public static void cooldown(ClientTickEvent event) {
-
 		if (cooldown > 0) {
 			cooldown--;
+		}
+		if(mainWindowWidth != mc.getMainWindow().getScaledWidth() || mainWindowHeight != mc.getMainWindow().getScaledHeight()) {
+			mainWindowWidth = mc.getMainWindow().getScaledWidth();
+			mainWindowHeight = mc.getMainWindow().getScaledHeight();
+			BetterOverlay.updatePositions();
 		}
 	}
 
 	@SuppressWarnings("deprecation")
 	@SubscribeEvent
 	public static void Discord(DrawScreenEvent.Post event) {
-		if (event.getGui() instanceof IngameMenuScreen) {
+		if (event.getGui() instanceof Settings && mc.world != null) {
 			mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.DISCORD));
 			RenderSystem.scalef(0.1F, 0.1F, 0.1F);
 			RenderSystem.enableBlend();
@@ -107,7 +131,7 @@ public class BetterOverlayEvents {
 
 	@SubscribeEvent
 	public static void DiscordBackground(DrawScreenEvent.Pre event) {
-		if (event.getGui() instanceof IngameMenuScreen) {
+		if (event.getGui() instanceof Settings && mc.world != null) {
 			int posX = 0;
 			int posY = mc.getMainWindow().getScaledHeight() - 40;
 			mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.DISCORD_BACKGROUND));
@@ -119,18 +143,18 @@ public class BetterOverlayEvents {
 
 	@SubscribeEvent
 	public static void MenuOptions(GuiScreenEvent.InitGuiEvent.Post event) {
-		if (event.getGui() instanceof IngameMenuScreen) {
-
-			event.addWidget(new Button(mc.getMainWindow().getScaledWidth() / 2 - 102, event.getWidgetList().get(7).field_230691_m_ + 25, 204, 20, new TranslationTextComponent("Better UX Settings"), (x) -> {
+		if (event.getGui() instanceof OptionsScreen && mc.world != null) {
+			event.addWidget(new Button(mc.getMainWindow().getScaledWidth() / 2 - 155, event.getGui().field_230709_l_ / 6 + 18, 150, 20, new TranslationTextComponent("Better UX Settings"), (x) -> {
 				mc.displayGuiScreen(Settings.instance);
 			}));
+		}
+		if (event.getGui() instanceof Settings && mc.world != null) {
 			event.addWidget(new Button(4, mc.getMainWindow().getScaledHeight() - 30, 20, 20, new TranslationTextComponent(" "), (x) -> {
 				mc.displayGuiScreen(new ConfirmOpenLinkScreen(BetterOverlayEvents::confirmLink, new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.com/invite/ty6gQaD").getValue(), false));
-
 			}));
 		}
 	}
-	
+
 	public static void confirmLink(boolean p_confirmLink_1_) {
 		if (p_confirmLink_1_) {
 			try {
@@ -149,7 +173,7 @@ public class BetterOverlayEvents {
 	}
 
 	@SubscribeEvent
-	public static void Arrows(DrawScreenEvent event) {
+	public static void Arrows(DrawScreenEvent.Post event) {
 		if (!(event.getGui() instanceof EditOverlay))
 			return;
 		SelectedOverlay overlay = null;
@@ -166,34 +190,34 @@ public class BetterOverlayEvents {
 		// UP
 
 		if (KeyboardHelper.isHoldingUP() && cooldown == 0) {
-			XMLFileJava.editElement(overlay.name + "PosY", Integer.toString(Integer.parseInt(XMLFileJava.readElement(overlay.name + "PosY")) - 1));
+			overlay.substractY(1);
 			cooldown = 3;
 		}
 
 		// DOWN
 
 		if (KeyboardHelper.isHoldingDOWN() && cooldown == 0) {
-			XMLFileJava.editElement(overlay.name + "PosY", Integer.toString(Integer.parseInt(XMLFileJava.readElement(overlay.name + "PosY")) + 1));
+			overlay.addY(1);
 			cooldown = 3;
 		}
 
 		// RIGHT
 
 		if (KeyboardHelper.isHoldingRIGHT() && cooldown == 0) {
-			XMLFileJava.editElement(overlay.name + "PosX", Integer.toString(Integer.parseInt(XMLFileJava.readElement(overlay.name + "PosX")) + 1));
+			overlay.addX(1);
 			cooldown = 3;
 		}
 
 		// LEFT
 
 		if (KeyboardHelper.isHoldingLEFT() && cooldown == 0) {
-			XMLFileJava.editElement(overlay.name + "PosX", Integer.toString(Integer.parseInt(XMLFileJava.readElement(overlay.name + "PosX")) - 1));
+			overlay.substractX(1);
 			cooldown = 3;
 		}
-
+		System.out.println(overlay.field_230690_l_);
 		if (mousePressed) {
-			XMLFileJava.editElement(overlay.name + "PosX", Integer.toString(Integer.parseInt(XMLFileJava.readElement(overlay.name + "PosX")) + ((int) event.getMouseX() - overlay.field_230690_l_ - overlay.func_230998_h_() / 2)));
-			XMLFileJava.editElement(overlay.name + "PosY", Integer.toString(Integer.parseInt(XMLFileJava.readElement(overlay.name + "PosY")) + ((int) event.getMouseY() - overlay.field_230691_m_ - overlay.func_238483_d_() / 2)));
+			overlay.setX(event.getMouseX() - overlay.scaledX - overlay.func_230998_h_() / 2);
+			overlay.setY(event.getMouseY() - overlay.scaledY - overlay.func_238483_d_() / 2);
 		}
 	}
 
@@ -237,4 +261,20 @@ public class BetterOverlayEvents {
 			return;
 		mousePressed = false;
 	}
+
+	@SubscribeEvent
+	public static void fadingTick(ClientTickEvent event) {
+		if (increase) {
+			fading += 0.05;
+		} else {
+			fading -= 0.05;
+		}
+		if (fading < 0.0F) {
+			increase = true;
+		}
+		if (fading > 1.0F) {
+			increase = false;
+		}
+	}
+
 }

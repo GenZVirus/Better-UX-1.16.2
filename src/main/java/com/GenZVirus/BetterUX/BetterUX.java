@@ -3,9 +3,12 @@ package com.GenZVirus.BetterUX;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.GenZVirus.BetterUX.Client.GUI.BetterOverlay;
+
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -49,6 +52,9 @@ public class BetterUX {
 	}
 
 	private void doClientStuff(final FMLClientSetupEvent event) {
+		if(ModList.get().isLoaded("vampirism")) {
+			BetterOverlay.isVampirismLoaded = true;
+		}
 	}
 
 	@SubscribeEvent
