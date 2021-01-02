@@ -2,6 +2,7 @@ package com.GenZVirus.BetterUX.Client.Events;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import com.GenZVirus.BetterUX.BetterUX;
 import com.GenZVirus.BetterUX.Client.File.XMLFileJava;
@@ -16,13 +17,17 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.ClientBossInfo;
 import net.minecraft.client.gui.screen.ConfirmOpenLinkScreen;
 import net.minecraft.client.gui.screen.OptionsScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraftforge.api.distmarker.Dist;
@@ -33,7 +38,6 @@ import net.minecraftforge.client.event.GuiScreenEvent.MouseReleasedEvent;
 import net.minecraftforge.client.event.RenderBlockOverlayEvent;
 import net.minecraftforge.client.event.RenderBlockOverlayEvent.OverlayType;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent.BossInfo;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -51,10 +55,13 @@ public class BetterOverlayEvents {
 
 	public static int mainWindowWidth = 0;
 	public static int mainWindowHeight = 0;
+
+	public static int checkForBosses = 0;
 	
 	@SubscribeEvent(receiveCanceled = true)
 	public static void Overlay(RenderGameOverlayEvent.Pre event) {
-		if(BetterOverlay.Enabled_Disabled.contentEquals("disabled")) return;
+		if (BetterOverlay.Enabled_Disabled.contentEquals("disabled"))
+			return;
 		if (event.getType() == RenderGameOverlayEvent.ElementType.HEALTH) {
 			event.setCanceled(true);
 			BetterOverlay.renderHealth();
@@ -83,22 +90,54 @@ public class BetterOverlayEvents {
 		}
 		if (event.getType() == RenderGameOverlayEvent.ElementType.BOSSINFO) {
 			event.setCanceled(true);
-			ClientBossInfo bossInfo = ((BossInfo) event).getBossInfo();
-			BetterOverlay.renderBossBar(bossInfo);
+			checkForBosses = 100;
 		}
 	}
 
 	@SubscribeEvent(receiveCanceled = true)
 	public static void FireOverlay(RenderBlockOverlayEvent event) {
-		if(BetterOverlay.Enabled_Disabled.contentEquals("disabled")) return;
+		if (BetterOverlay.Enabled_Disabled.contentEquals("disabled"))
+			return;
 		if (event.getOverlayType() == OverlayType.FIRE) {
 			event.setCanceled(true);
 		}
 	}
-	
+
 	@SubscribeEvent
 	public static void onPlayerLogging(PlayerLoggedInEvent event) {
 		XMLFileJava.load();
+	}
+
+	@SubscribeEvent
+	public static void checkForClosestBoss(RenderGameOverlayEvent.Pre event) {
+		if(event.getType() != RenderGameOverlayEvent.ElementType.CHAT) return;
+		if (checkForBosses <= 0)
+			return;
+		PlayerEntity player = mc.player;
+		AxisAlignedBB CUBE_BOX = VoxelShapes.fullCube().getBoundingBox();
+		AxisAlignedBB aabb = CUBE_BOX.offset(player.getPositionVec()).grow(100);
+		List<Entity> list = mc.world.getEntitiesWithinAABBExcludingEntity(player, aabb);
+		float minDist = 200;
+		Entity Boss = null;
+		for (Entity entity : list) {
+			if (!entity.isNonBoss() && entity instanceof LivingEntity) {
+				float dist = entity.getDistance(player);
+				if (dist < minDist) {
+					minDist = dist;
+					Boss = entity;
+				}
+			}
+		}
+		if (Boss != null) {
+			BetterOverlay.renderBossBar((LivingEntity) Boss);
+		}
+	}
+
+	@SubscribeEvent
+	public static void checkForBoss(ClientTickEvent event) {
+		if (checkForBosses > 0) {
+			checkForBosses--;
+		}
 	}
 
 	@SubscribeEvent
@@ -106,7 +145,11 @@ public class BetterOverlayEvents {
 		if (cooldown > 0) {
 			cooldown--;
 		}
-		if(mainWindowWidth != mc.getMainWindow().getScaledWidth() || mainWindowHeight != mc.getMainWindow().getScaledHeight()) {
+	}
+
+	@SubscribeEvent
+	public static void updatePositions(ClientTickEvent event) {
+		if (mainWindowWidth != mc.getMainWindow().getScaledWidth() || mainWindowHeight != mc.getMainWindow().getScaledHeight()) {
 			mainWindowWidth = mc.getMainWindow().getScaledWidth();
 			mainWindowHeight = mc.getMainWindow().getScaledHeight();
 			BetterOverlay.updatePositions();
@@ -122,10 +165,10 @@ public class BetterOverlayEvents {
 			RenderSystem.enableBlend();
 			int posX = 6;
 			int posY = mc.getMainWindow().getScaledHeight() - 28;
-			AbstractGui.func_238464_a_(new MatrixStack(), posX * 10, posY * 10, 0, 0, 0, 160, 160, 160, 160);
+			AbstractGui.blit(new MatrixStack(), posX * 10, posY * 10, 0, 0, 0, 160, 160, 160, 160);
 			RenderSystem.disableBlend();
 			RenderSystem.scalef(10.0F, 10.0F, 10.0F);
-			mc.fontRenderer.func_238421_b_(new MatrixStack(), "Better UX", posX + 28, posY + 4, 0xFFFFFFFF);
+			mc.fontRenderer.drawString(new MatrixStack(), "Better UX", posX + 28, posY + 4, 0xFFFFFFFF);
 		}
 	}
 
@@ -136,7 +179,7 @@ public class BetterOverlayEvents {
 			int posY = mc.getMainWindow().getScaledHeight() - 40;
 			mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.DISCORD_BACKGROUND));
 			RenderSystem.enableBlend();
-			AbstractGui.func_238464_a_(new MatrixStack(), posX, posY, 0, 0, 0, 120, 40, 40, 120);
+			AbstractGui.blit(new MatrixStack(), posX, posY, 0, 0, 0, 120, 40, 40, 120);
 			RenderSystem.disableBlend();
 		}
 	}
@@ -144,7 +187,7 @@ public class BetterOverlayEvents {
 	@SubscribeEvent
 	public static void MenuOptions(GuiScreenEvent.InitGuiEvent.Post event) {
 		if (event.getGui() instanceof OptionsScreen && mc.world != null) {
-			event.addWidget(new Button(mc.getMainWindow().getScaledWidth() / 2 - 155, event.getGui().field_230709_l_ / 6 + 18, 150, 20, new TranslationTextComponent("Better UX Settings"), (x) -> {
+			event.addWidget(new Button(5, event.getGui().height - 25, 100, 20, new TranslationTextComponent("Better UX Settings"), (x) -> {
 				mc.displayGuiScreen(Settings.instance);
 			}));
 		}
@@ -214,10 +257,9 @@ public class BetterOverlayEvents {
 			overlay.substractX(1);
 			cooldown = 3;
 		}
-		System.out.println(overlay.field_230690_l_);
 		if (mousePressed) {
-			overlay.setX(event.getMouseX() - overlay.scaledX - overlay.func_230998_h_() / 2);
-			overlay.setY(event.getMouseY() - overlay.scaledY - overlay.func_238483_d_() / 2);
+			overlay.setX(event.getMouseX() - overlay.scaledX - overlay.getWidth() / 2);
+			overlay.setY(event.getMouseY() - overlay.scaledY - overlay.getHeightRealms() / 2);
 		}
 	}
 
@@ -231,10 +273,10 @@ public class BetterOverlayEvents {
 				overlay = (SelectedOverlay) button;
 				break;
 			} else {
-				int widthIn = button.field_230690_l_;
-				int heightIn = button.field_230691_m_;
-				int width = button.func_230998_h_();
-				int height = button.func_238483_d_();
+				int widthIn = button.x;
+				int heightIn = button.y;
+				int width = button.getWidth();
+				int height = button.getHeightRealms();
 				int x = (int) event.getMouseX();
 				int y = (int) event.getMouseY();
 				if (x >= widthIn && x < widthIn + width && y >= heightIn && y < heightIn + height) {
@@ -244,10 +286,10 @@ public class BetterOverlayEvents {
 		}
 		if (overlay == null)
 			return;
-		int widthIn = overlay.field_230690_l_;
-		int heightIn = overlay.field_230691_m_;
-		int width = overlay.func_230998_h_();
-		int height = overlay.func_238483_d_();
+		int widthIn = overlay.x;
+		int heightIn = overlay.y;
+		int width = overlay.getWidth();
+		int height = overlay.getHeightRealms();
 		int x = (int) event.getMouseX();
 		int y = (int) event.getMouseY();
 		if (x >= widthIn && x < widthIn + width && y >= heightIn && y < heightIn + height) {

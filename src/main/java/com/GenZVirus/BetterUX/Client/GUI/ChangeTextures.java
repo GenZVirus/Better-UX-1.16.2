@@ -12,7 +12,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 public class ChangeTextures extends Screen{
 
-	private Button GenZVirus, Zetta;
+	private Button GenZVirus, Zetta, Squared, Improved;
 	private Minecraft mc = Minecraft.getInstance();
 	public static ChangeTextures instance = new ChangeTextures(new TranslationTextComponent("ChangeTextures"));
 	
@@ -21,12 +21,12 @@ public class ChangeTextures extends Screen{
 	}
 
 	@Override
-	protected void func_231160_c_() {
-		super.func_231160_c_();
+	protected void init() {
+		super.init();
 		
 		GenZVirus = new Button(mc.getMainWindow().getScaledWidth() / 2 - 105, mc.getMainWindow().getScaledHeight() / 2 - 5, 100, 20, new TranslationTextComponent("GenZVirus"), (x) -> {
 			resetButtons();
-			GenZVirus.field_230693_o_ = false;
+			GenZVirus.active = false;
 			XMLFileJava.checkFileAndMake();
 			XMLFileJava.editElement("Texture", "genzvirus");
 			XMLFileJava.load();
@@ -34,43 +34,66 @@ public class ChangeTextures extends Screen{
 		
 		Zetta = new Button(mc.getMainWindow().getScaledWidth() / 2 + 5, mc.getMainWindow().getScaledHeight() / 2 - 5, 100, 20, new TranslationTextComponent("Zetta"), (x) -> {
 			resetButtons();
-			Zetta.field_230693_o_ = false;
+			Zetta.active = false;
 			XMLFileJava.checkFileAndMake();
 			XMLFileJava.editElement("Texture", "zetta");
 			XMLFileJava.load();
 		});
+		Squared = new Button(mc.getMainWindow().getScaledWidth() / 2 + 5, mc.getMainWindow().getScaledHeight() / 2 + 25, 100, 20, new TranslationTextComponent("Squared"), (x) -> {
+			resetButtons();
+			Squared.active = false;
+			XMLFileJava.checkFileAndMake();
+			XMLFileJava.editElement("Texture", "squared");
+			XMLFileJava.editElement("HasOverlay", "true");
+			XMLFileJava.load();
+		});
+		
+		Improved = new Button(mc.getMainWindow().getScaledWidth() / 2 - 105, mc.getMainWindow().getScaledHeight() / 2 + 25, 100, 20, new TranslationTextComponent("Improved"), (x) -> {
+			resetButtons();
+			Improved.active = false;
+			XMLFileJava.checkFileAndMake();
+			XMLFileJava.editElement("Texture", "improved");
+			XMLFileJava.editElement("HasOverlay", "true");
+			XMLFileJava.load();
+		});
+		
 		XMLFileJava.checkFileAndMake();
 		String texture = XMLFileJava.readElement("Texture");
-		if(texture.contentEquals("genzvirus")) {
-			GenZVirus.field_230693_o_ = false;
-		} else if(texture.contentEquals("zetta")) {
-			Zetta.field_230693_o_ = false;
+		if (texture.contentEquals("genzvirus")) {
+			GenZVirus.active = false;
+		} else if (texture.contentEquals("zetta")) {
+			Zetta.active = false;
+		} else if (texture.contentEquals("squared")) {
+			Squared.active = false;
+		} else if (texture.contentEquals("improved")) {
+			Improved.active = false;
 		}
-		
-		this.func_230480_a_(GenZVirus);
-		this.func_230480_a_(Zetta);
-		
+
+		this.addButton(GenZVirus);
+		this.addButton(Zetta);
+		this.addButton(Squared);
+//		this.addButton(Improved);
 	}
 	
 	public void resetButtons() {
-		for(Widget button : this.field_230710_m_) {
-			button.field_230693_o_ = true;
+		for(Widget button : this.buttons) {
+			button.active = true;
 		}
 	}
 	
 	@Override
-	public boolean func_231178_ax__() {
+	public boolean shouldCloseOnEsc() {
 		return true;
 	}
 	
 	@Override
-	public boolean func_231177_au__() {
+	public boolean isPauseScreen() {
 		return true;
 	}
 	@Override
-	public void func_230430_a_(MatrixStack stack, int p_render_1_, int p_render_2_, float p_render_3_) {
-		this.func_230446_a_(stack);
-		super.func_230430_a_(stack, p_render_1_, p_render_2_, p_render_3_);
+	public void render(MatrixStack stack, int p_render_1_, int p_render_2_, float p_render_3_) {
+		this.renderBackground(stack);
+		super.render(stack, p_render_1_, p_render_2_, p_render_3_);
 	}
 	
 }

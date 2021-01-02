@@ -9,9 +9,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.ClientBossInfo;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Effects;
@@ -46,6 +46,9 @@ public class BetterOverlay {
 	public static int BossBarPosX = 0;
 	public static int BossBarPosY = 0;
 	public static String Enabled_Disabled;
+	public static boolean HasOverlay = false;
+	public static boolean wasHoldingFood = false;
+	public static boolean textDisabled = false;
 
 	/***********************************
 	 * 
@@ -141,6 +144,8 @@ public class BetterOverlay {
 	public static String playerSaturationText = "";
 	public static int foodPercentage = 0;
 	public static int saturationPercentage = 0;
+	public static int addedFoodPercentage = 0;
+	public static int addedSaturationPercentage = 0;
 	public static String foodFinal = "";
 
 	/***********************************
@@ -291,7 +296,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.func_238464_a_(new MatrixStack(), HealthPosX, HealthPosY, 0, 0, 0, 90, 10, 10, 90);
+		AbstractGui.blit(new MatrixStack(), HealthPosX, HealthPosY, 0, 0, 0, 90, 10, 10, 90);
 
 		/***********************************
 		 * 
@@ -343,7 +348,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.func_238464_a_(new MatrixStack(), HealthPosX + 1, HealthPosY + 1, 0, 0, 0, healthPercentage, 8, 8, 88);
+		AbstractGui.blit(new MatrixStack(), HealthPosX + 1, HealthPosY + 1, 0, 0, 0, healthPercentage, 8, 8, 88);
 
 		/***********************************
 		 * 
@@ -355,7 +360,18 @@ public class BetterOverlay {
 
 		if (mc.player.getAbsorptionAmount() > 0) {
 			mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.SHIELD_BAR));
-			AbstractGui.func_238464_a_(new MatrixStack(), HealthPosX, HealthPosY, 0, 0, 0, 90, 10, 10, 90);
+			AbstractGui.blit(new MatrixStack(), HealthPosX, HealthPosY, 0, 0, 0, 90, 10, 10, 90);
+		}
+
+		/***********************************
+		 * 
+		 * Checking if the texture has overlays
+		 * 
+		 ***********************************/
+
+		if (HasOverlay) {
+			mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.HEALTH_BAR_OVERLAY));
+			AbstractGui.blit(new MatrixStack(), HealthPosX, HealthPosY, 0, 0, 0, 90, 10, 10, 90);
 		}
 
 		/***********************************
@@ -380,7 +396,7 @@ public class BetterOverlay {
 			 * 
 			 ***********************************/
 
-			AbstractGui.func_238464_a_(new MatrixStack(), firePosX, firePosY, 0, 0, fire_offset * 32, 200, 32, 5792, 200);
+			AbstractGui.blit(new MatrixStack(), firePosX, firePosY, 0, 0, fire_offset * 32, 200, 32, 5792, 200);
 		}
 
 		/***********************************
@@ -391,70 +407,73 @@ public class BetterOverlay {
 
 		RenderSystem.disableBlend();
 
-		/***********************************
-		 * 
-		 * RENDERING HEALTH BAR TEXT
-		 * 
-		 ***********************************/
-
-		/***********************************
-		 * 
-		 * Checking if the player current health has changed for an update
-		 * 
-		 ***********************************/
-
-		if (playerHealthValue != mc.player.getHealth()) {
+		if (!textDisabled) {
 
 			/***********************************
 			 * 
-			 * Updating the player health
+			 * RENDERING HEALTH BAR TEXT
 			 * 
 			 ***********************************/
-
-			playerHealthValue = mc.player.getHealth();
 
 			/***********************************
 			 * 
-			 * Updating the text health Note: The text health is displayed on the on top of
-			 * the health bar
+			 * Checking if the player current health has changed for an update
 			 * 
 			 ***********************************/
 
-			playerHealthText = Integer.toString((int) mc.player.getHealth()) + " / " + Integer.toString((int) mc.player.getMaxHealth());
-
-			/***********************************
-			 * 
-			 * Checking if the player has any amount of absorption
-			 * 
-			 ***********************************/
-
-			if (mc.player.getAbsorptionAmount() > 0) {
+			if (playerHealthValue != mc.player.getHealth()) {
 
 				/***********************************
 				 * 
-				 * Appending the absorption amount to the health text if present
+				 * Updating the player health
 				 * 
 				 ***********************************/
 
-				playerHealthText += " | " + Integer.toString((int) mc.player.getAbsorptionAmount());
+				playerHealthValue = mc.player.getHealth();
+
+				/***********************************
+				 * 
+				 * Updating the text health Note: The text health is displayed on the on top of
+				 * the health bar
+				 * 
+				 ***********************************/
+
+				playerHealthText = Integer.toString((int) mc.player.getHealth()) + " / " + Integer.toString((int) mc.player.getMaxHealth());
+
+				/***********************************
+				 * 
+				 * Checking if the player has any amount of absorption
+				 * 
+				 ***********************************/
+
+				if (mc.player.getAbsorptionAmount() > 0) {
+
+					/***********************************
+					 * 
+					 * Appending the absorption amount to the health text if present
+					 * 
+					 ***********************************/
+
+					playerHealthText += " | " + Integer.toString((int) mc.player.getAbsorptionAmount());
+				}
 			}
+
+			/***********************************
+			 * 
+			 * Calculating the text health length
+			 * 
+			 ***********************************/
+
+			int stringWidth = mc.fontRenderer.getStringWidth(playerHealthText);
+
+			/***********************************
+			 * 
+			 * Drawing the text on the screen
+			 * 
+			 ***********************************/
+
+			mc.fontRenderer.drawString(new MatrixStack(), playerHealthText, HealthPosX + 45 - stringWidth / 2, HealthPosY + 1, 0xFFFFFFFF);
 		}
-
-		/***********************************
-		 * 
-		 * Calculating the text health length
-		 * 
-		 ***********************************/
-
-		int stringWidth = mc.fontRenderer.getStringWidth(playerHealthText);
-
-		/***********************************
-		 * 
-		 * Drawing the text on the screen
-		 * 
-		 ***********************************/
-
-		mc.fontRenderer.func_238421_b_(new MatrixStack(), playerHealthText, HealthPosX + 45 - stringWidth / 2, HealthPosY + 1, 0xFFFFFFFF);
 
 		/***********************************
 		 * 
@@ -520,7 +539,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.func_238464_a_(new MatrixStack(), foodPosX - 90, foodPosY, 0, 0, 0, 90, 10, 10, 90);
+		AbstractGui.blit(new MatrixStack(), foodPosX - 90, foodPosY, 0, 0, 0, 90, 10, 10, 90);
 
 		if (isVampirismLoaded) {
 			VampirismComp.bloodOverlay();
@@ -568,7 +587,7 @@ public class BetterOverlay {
 			 * 
 			 ***********************************/
 
-			AbstractGui.func_238464_a_(new MatrixStack(), foodPosX - 89 + 88 - foodPercentage, foodPosY + 1, 0, 88 - foodPercentage, 0, foodPercentage, 8, 8, 88);
+			AbstractGui.blit(new MatrixStack(), foodPosX - 89 + 88 - foodPercentage, foodPosY + 1, 0, 88 - foodPercentage, 0, foodPercentage, 8, 8, 88);
 
 			/***********************************
 			 * 
@@ -605,7 +624,7 @@ public class BetterOverlay {
 			 * 
 			 ***********************************/
 
-			AbstractGui.func_238464_a_(new MatrixStack(), foodPosX - 89 + 88 - saturationPercentage, foodPosY + 1, 0, 88 - saturationPercentage, 0, saturationPercentage, 8, 8, 88);
+			AbstractGui.blit(new MatrixStack(), foodPosX - 89 + 88 - saturationPercentage, foodPosY + 1, 0, 88 - saturationPercentage, 0, saturationPercentage, 8, 8, 88);
 
 			/***********************************
 			 * 
@@ -620,6 +639,8 @@ public class BetterOverlay {
 			 ***********************************/
 
 			if (mc.player.getHeldItemMainhand().isFood() || mc.player.getHeldItemOffhand().isFood()) {
+
+				wasHoldingFood = true;
 
 				/***********************************
 				 * 
@@ -655,10 +676,10 @@ public class BetterOverlay {
 
 				if (mc.player.getHeldItemMainhand().isFood()) {
 					healing = mc.player.getHeldItemMainhand().getItem().getFood().getHealing();
-					Saturation = (int) Math.min(stats.getSaturationLevel() + (float) healing * mc.player.getHeldItemMainhand().getItem().getFood().getSaturation() * 2.0F, (float) Math.min(healing + stats.getFoodLevel(), 20));
+					Saturation = (int) Math.min((float) healing * mc.player.getHeldItemMainhand().getItem().getFood().getSaturation() * 2.0F, (float) Math.min(healing + stats.getFoodLevel(), 20));
 				} else {
 					healing = mc.player.getHeldItemOffhand().getItem().getFood().getHealing();
-					Saturation = (int) Math.min(stats.getSaturationLevel() + (float) healing * mc.player.getHeldItemOffhand().getItem().getFood().getSaturation() * 2.0F, (float) Math.min(healing + stats.getFoodLevel(), 20));
+					Saturation = (int) Math.min((float) healing * mc.player.getHeldItemOffhand().getItem().getFood().getSaturation() * 2.0F, (float) Math.min(healing + stats.getFoodLevel(), 20));
 				}
 
 				/***********************************
@@ -668,9 +689,9 @@ public class BetterOverlay {
 				 * 
 				 ***********************************/
 
-				if (healing != addedFoodValue) {
-					BetterOverlay.addedFoodText = "\u00A7a" + (healing + stats.getFoodLevel() > 20 ? 20 - stats.getFoodLevel() : healing) + "+ \u00A7r";
-					addedFoodValue = healing;
+				if (healing != addedFoodValue || healing + playerFoodValue > 20) {
+					addedFoodValue = healing + stats.getFoodLevel() > 20 ? 20 - stats.getFoodLevel() : healing;
+					BetterOverlay.addedFoodText = "\u00A7a" + addedFoodValue + "+ \u00A7r";
 				}
 
 				/***********************************
@@ -680,9 +701,9 @@ public class BetterOverlay {
 				 * 
 				 ***********************************/
 
-				if (Saturation != addedSaturationValue) {
-					BetterOverlay.addedSaturationText = "\u00A7a" + (Saturation + stats.getSaturationLevel() > 20 ? 20 - (int) (stats.getSaturationLevel()) : Saturation) + "+ \u00A7r";
-					addedSaturationValue = Saturation;
+				if (Saturation != addedSaturationValue || Saturation + playerSaturationValue > 20) {
+					addedSaturationValue = Saturation + stats.getSaturationLevel() > 20 ? 20 - (int) (stats.getSaturationLevel()) : Saturation;
+					BetterOverlay.addedSaturationText = "\u00A7a" + addedSaturationValue + "+ \u00A7r";
 				}
 
 				/***********************************
@@ -702,9 +723,9 @@ public class BetterOverlay {
 				 * 
 				 ***********************************/
 
-				foodPercentage = (int) (88 * level / 20);
-				if (foodPercentage > 88)
-					foodPercentage = 88;
+				addedFoodPercentage = (int) (88 * level / 20);
+				if (addedFoodPercentage > 88)
+					addedFoodPercentage = 88;
 
 				/***********************************
 				 * 
@@ -720,7 +741,7 @@ public class BetterOverlay {
 				 * 
 				 ***********************************/
 
-				AbstractGui.func_238464_a_(new MatrixStack(), foodPosX - 89 + 88 - foodPercentage, foodPosY + 1, 0, 88 - foodPercentage, 0, foodPercentage, 8, 8, 88);
+				AbstractGui.blit(new MatrixStack(), foodPosX - 89 + 88 - addedFoodPercentage, foodPosY + 1, 0, 88 - addedFoodPercentage, 0, addedFoodPercentage, 8, 8, 88);
 
 				/***********************************
 				 * 
@@ -739,9 +760,9 @@ public class BetterOverlay {
 				 * 
 				 ***********************************/
 
-				saturationPercentage = (int) (88 * level / 20);
-				if (saturationPercentage > 88)
-					saturationPercentage = 88;
+				addedSaturationPercentage = (int) (88 * level / 20);
+				if (addedSaturationPercentage > 88)
+					addedSaturationPercentage = 88;
 
 				/***********************************
 				 * 
@@ -757,7 +778,7 @@ public class BetterOverlay {
 				 * 
 				 ***********************************/
 
-				AbstractGui.func_238464_a_(new MatrixStack(), foodPosX - 89 + 88 - saturationPercentage, foodPosY + 1, 0, 88 - saturationPercentage, 0, saturationPercentage, 8, 8, 88);
+				AbstractGui.blit(new MatrixStack(), foodPosX - 89 + 88 - addedSaturationPercentage, foodPosY + 1, 0, 88 - addedSaturationPercentage, 0, addedSaturationPercentage, 8, 8, 88);
 
 				/***********************************
 				 * 
@@ -797,27 +818,41 @@ public class BetterOverlay {
 
 				/***********************************
 				 * 
-				 * Creating display message
+				 * Checking if the texture has overlays
 				 * 
 				 ***********************************/
 
-				foodFinal = BetterOverlay.addedFoodText + BetterOverlay.playerFoodText + " | " + BetterOverlay.addedSaturationText + BetterOverlay.playerSaturationText;
+				if (BetterOverlay.HasOverlay) {
+					mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.FOOD_BAR_OVERLAY));
+					AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 90, BetterOverlay.foodPosY, 0, 0, 0, 90, 10, 10, 90);
+				}
 
-				/***********************************
-				 * 
-				 * Calculating message length
-				 * 
-				 ***********************************/
+				if (!textDisabled) {
 
-				int stringWidth = mc.fontRenderer.getStringWidth(foodFinal);
+					/***********************************
+					 * 
+					 * Creating display message
+					 * 
+					 ***********************************/
 
-				/***********************************
-				 * 
-				 * Drawing the message on the screen
-				 * 
-				 ***********************************/
+					foodFinal = BetterOverlay.addedFoodText + BetterOverlay.playerFoodText + " | " + BetterOverlay.addedSaturationText + BetterOverlay.playerSaturationText;
 
-				mc.fontRenderer.func_238421_b_(new MatrixStack(), foodFinal, foodPosX - 45 - stringWidth / 2, foodPosY + 1, 0xFFFFFFFF);
+					/***********************************
+					 * 
+					 * Calculating message length
+					 * 
+					 ***********************************/
+
+					int stringWidth = mc.fontRenderer.getStringWidth(foodFinal);
+
+					/***********************************
+					 * 
+					 * Drawing the message on the screen
+					 * 
+					 ***********************************/
+
+					mc.fontRenderer.drawString(new MatrixStack(), foodFinal, foodPosX - 45 - stringWidth / 2, foodPosY + 1, 0xFFFFFFFF);
+				}
 			} else {
 
 				/***********************************
@@ -826,7 +861,9 @@ public class BetterOverlay {
 				 * 
 				 ***********************************/
 
-				if (playerFoodValue != stats.getFoodLevel() && playerSaturationValue != (int) stats.getSaturationLevel() || addedFoodValue != 0 && addedSaturationValue != 0) {
+				if (playerFoodValue != stats.getFoodLevel() || playerSaturationValue != (int) stats.getSaturationLevel() || addedFoodValue != 0 && addedSaturationValue != 0 || wasHoldingFood) {
+
+					wasHoldingFood = false;
 
 					/***********************************
 					 * 
@@ -861,19 +898,33 @@ public class BetterOverlay {
 
 				/***********************************
 				 * 
-				 * Calculating message length
+				 * Checking if the texture has overlays
 				 * 
 				 ***********************************/
 
-				int stringWidth = mc.fontRenderer.getStringWidth(foodFinal);
+				if (BetterOverlay.HasOverlay) {
+					mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.FOOD_BAR_OVERLAY));
+					AbstractGui.blit(new MatrixStack(), foodPosX - 90, BetterOverlay.foodPosY, 0, 0, 0, 90, 10, 10, 90);
+				}
 
-				/***********************************
-				 * 
-				 * Drawing the message on the screen
-				 * 
-				 ***********************************/
+				if (!textDisabled) {
 
-				mc.fontRenderer.func_238421_b_(new MatrixStack(), foodFinal, foodPosX - 45 - stringWidth / 2, foodPosY + 1, 0xFFFFFFFF);
+					/***********************************
+					 * 
+					 * Calculating message length
+					 * 
+					 ***********************************/
+
+					int stringWidth = mc.fontRenderer.getStringWidth(foodFinal);
+
+					/***********************************
+					 * 
+					 * Drawing the message on the screen
+					 * 
+					 ***********************************/
+
+					mc.fontRenderer.drawString(new MatrixStack(), foodFinal, foodPosX - 45 - stringWidth / 2, foodPosY + 1, 0xFFFFFFFF);
+				}
 			}
 		}
 
@@ -966,7 +1017,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		float toughness = (float) mc.player.getAttribute(Attributes.field_233827_j_).getValue();
+		float toughness = (float) mc.player.getAttribute(Attributes.ARMOR_TOUGHNESS).getValue();
 
 		/***********************************
 		 * 
@@ -982,7 +1033,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.func_238464_a_(new MatrixStack(), leftShieldPosX * 2, leftShieldPosY * 2, 0, 0, 0, 64, 64, 64, 64);
+		AbstractGui.blit(new MatrixStack(), leftShieldPosX * 2, leftShieldPosY * 2, 0, 0, 0, 64, 64, 64, 64);
 
 		/***********************************
 		 * 
@@ -998,7 +1049,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.func_238464_a_(new MatrixStack(), rightShieldPosX * 2, rightShieldPosY * 2, 0, 0, 0, 64, 64, 64, 64);
+		AbstractGui.blit(new MatrixStack(), rightShieldPosX * 2, rightShieldPosY * 2, 0, 0, 0, 64, 64, 64, 64);
 
 		/***********************************
 		 * 
@@ -1008,66 +1059,68 @@ public class BetterOverlay {
 
 		RenderSystem.scalef(2.0F, 2.0F, 2.0F);
 
-		/***********************************
-		 * 
-		 * Checking if the player total armor has change If the player total armor has
-		 * changed the global variables will be updated
-		 * 
-		 ***********************************/
+		if (!textDisabled) {
 
-		if (totalArmorValue != totalArmor) {
-			totalArmorValue = totalArmor;
-			float damageReduction = Math.round((100.0F - CombatRules.getDamageAfterAbsorb(100, totalArmor, toughness)) * 10) / 10.0F;
-			for (ItemStack stack : mc.player.getArmorInventoryList()) {
-				damageReduction += EnchantmentHelper.getEnchantmentLevel(Enchantments.PROTECTION, stack);
+			/***********************************
+			 * 
+			 * Checking if the player total armor has change If the player total armor has
+			 * changed the global variables will be updated
+			 * 
+			 ***********************************/
+
+			if (totalArmorValue != totalArmor) {
+				totalArmorValue = totalArmor;
+				float damageReduction = Math.round((100.0F - CombatRules.getDamageAfterAbsorb(100, totalArmor, toughness)) * 10) / 10.0F;
+				for (ItemStack stack : mc.player.getArmorInventoryList()) {
+					damageReduction += EnchantmentHelper.getEnchantmentLevel(Enchantments.PROTECTION, stack);
+				}
+				if (damageReduction > 100)
+					damageReduction = 100;
+				leftShieldDamageReductionText = damageReduction + "%";
+
+				/***********************************
+				 * 
+				 * Drawing the damage reduction amount on the left shield
+				 * 
+				 ***********************************/
+
+				mc.fontRenderer.drawString(new MatrixStack(), leftShieldDamageReductionText, leftShieldPosX + 16 - mc.fontRenderer.getStringWidth(leftShieldDamageReductionText) / 2, leftShieldPosY + 10, 0xFFFFFFFF);
+
+				damageReduction = Math.round(4.0 * totalArmor * 10) / 10;
+				for (ItemStack stack : mc.player.getArmorInventoryList()) {
+					damageReduction += EnchantmentHelper.getEnchantmentLevel(Enchantments.PROTECTION, stack);
+				}
+				if (damageReduction > 100)
+					damageReduction = 100;
+				rightShieldDamageReductionText = damageReduction + "%";
+
+				/***********************************
+				 * 
+				 * Drawing the damage reduction amount on the right shield
+				 * 
+				 ***********************************/
+
+				mc.fontRenderer.drawString(new MatrixStack(), rightShieldDamageReductionText, rightShieldPosX + 17 - mc.fontRenderer.getStringWidth(rightShieldDamageReductionText) / 2, rightShieldPosY + 10, 0xFFFFFFFF);
+			} else {
+
+				/***********************************
+				 * 
+				 * Drawing the damage reduction amount on the left shield
+				 * 
+				 ***********************************/
+
+				mc.fontRenderer.drawString(new MatrixStack(), leftShieldDamageReductionText, leftShieldPosX + 16 - mc.fontRenderer.getStringWidth(leftShieldDamageReductionText) / 2, leftShieldPosY + 10, 0xFFFFFFFF);
+
+				/***********************************
+				 * 
+				 * Drawing the damage reduction amount on the right shield
+				 * 
+				 ***********************************/
+
+				mc.fontRenderer.drawString(new MatrixStack(), rightShieldDamageReductionText, rightShieldPosX + 17 - mc.fontRenderer.getStringWidth(rightShieldDamageReductionText) / 2, rightShieldPosY + 10, 0xFFFFFFFF);
+
 			}
-			if (damageReduction > 100)
-				damageReduction = 100;
-			leftShieldDamageReductionText = damageReduction + "%";
-
-			/***********************************
-			 * 
-			 * Drawing the damage reduction amount on the left shield
-			 * 
-			 ***********************************/
-
-			mc.fontRenderer.func_238421_b_(new MatrixStack(), leftShieldDamageReductionText, leftShieldPosX + 16 - mc.fontRenderer.getStringWidth(leftShieldDamageReductionText) / 2, leftShieldPosY + 10, 0xFFFFFFFF);
-
-			damageReduction = Math.round(4.0 * totalArmor * 10) / 10;
-			for (ItemStack stack : mc.player.getArmorInventoryList()) {
-				damageReduction += EnchantmentHelper.getEnchantmentLevel(Enchantments.PROTECTION, stack);
-			}
-			if (damageReduction > 100)
-				damageReduction = 100;
-			rightShieldDamageReductionText = damageReduction + "%";
-
-			/***********************************
-			 * 
-			 * Drawing the damage reduction amount on the right shield
-			 * 
-			 ***********************************/
-
-			mc.fontRenderer.func_238421_b_(new MatrixStack(), rightShieldDamageReductionText, rightShieldPosX + 17 - mc.fontRenderer.getStringWidth(rightShieldDamageReductionText) / 2, rightShieldPosY + 10, 0xFFFFFFFF);
-		} else {
-
-			/***********************************
-			 * 
-			 * Drawing the damage reduction amount on the left shield
-			 * 
-			 ***********************************/
-
-			mc.fontRenderer.func_238421_b_(new MatrixStack(), leftShieldDamageReductionText, leftShieldPosX + 16 - mc.fontRenderer.getStringWidth(leftShieldDamageReductionText) / 2, leftShieldPosY + 10, 0xFFFFFFFF);
-
-			/***********************************
-			 * 
-			 * Drawing the damage reduction amount on the right shield
-			 * 
-			 ***********************************/
-
-			mc.fontRenderer.func_238421_b_(new MatrixStack(), rightShieldDamageReductionText, rightShieldPosX + 17 - mc.fontRenderer.getStringWidth(rightShieldDamageReductionText) / 2, rightShieldPosY + 10, 0xFFFFFFFF);
-
 		}
-
 		/***********************************
 		 * 
 		 * Disable image transparency
@@ -1112,11 +1165,11 @@ public class BetterOverlay {
 
 		/***********************************
 		 * 
-		 * Checking if the player is in creative mode
+		 * Checking if the player is in creative mode or spectator mode
 		 * 
 		 ***********************************/
 
-		if (!mc.player.isCreative()) {
+		if (!mc.player.isCreative() && !mc.player.isSpectator()) {
 
 			/***********************************
 			 * 
@@ -1156,7 +1209,7 @@ public class BetterOverlay {
 			 * 
 			 ***********************************/
 
-			AbstractGui.func_238464_a_(new MatrixStack(), expPosX, expPosY, 0, 0, 0, 182, 16, 16, 182);
+			AbstractGui.blit(new MatrixStack(), expPosX, expPosY, 0, 0, 0, 182, 16, 16, 182);
 
 			/***********************************
 			 * 
@@ -1180,7 +1233,7 @@ public class BetterOverlay {
 				 * 
 				 ***********************************/
 
-				AbstractGui.func_238464_a_(new MatrixStack(), expPosX + 1, expPosY + 1, 0, 0, 0, k, 14, 14, 180);
+				AbstractGui.blit(new MatrixStack(), expPosX + 1, expPosY + 1, 0, 0, 0, k, 14, 14, 180);
 			}
 
 			/***********************************
@@ -1234,7 +1287,7 @@ public class BetterOverlay {
 			 * 
 			 ***********************************/
 
-			mc.fontRenderer.func_238421_b_(new MatrixStack(), playerLevelText, (expPosX + 93 - mc.fontRenderer.getStringWidth(playerLevelText) / 2) * 1.25F, (expPosY + 5) * 1.25F, 0xFFFFFFFF);
+			mc.fontRenderer.drawString(new MatrixStack(), playerLevelText, (expPosX + 93 - mc.fontRenderer.getStringWidth(playerLevelText) / 2) * 1.25F, (expPosY + 5) * 1.25F, 0xFFFFFFFF);
 
 			/***********************************
 			 * 
@@ -1334,7 +1387,7 @@ public class BetterOverlay {
 			 * 
 			 ***********************************/
 
-			AbstractGui.func_238464_a_(new MatrixStack(), airPosX, airPosY, 0, 0, 0, 182, 16, 16, 182);
+			AbstractGui.blit(new MatrixStack(), airPosX, airPosY, 0, 0, 0, 182, 16, 16, 182);
 
 			/***********************************
 			 * 
@@ -1358,7 +1411,18 @@ public class BetterOverlay {
 				 * 
 				 ***********************************/
 
-				AbstractGui.func_238464_a_(new MatrixStack(), airPosX + 1, airPosY + 1, 0, 0, 0, k, 14, 14, 180);
+				AbstractGui.blit(new MatrixStack(), airPosX + 1, airPosY + 1, 0, 0, 0, k, 14, 14, 180);
+			}
+
+			/***********************************
+			 * 
+			 * Checking if the texture has overlays
+			 * 
+			 ***********************************/
+
+			if (BetterOverlay.HasOverlay) {
+				mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.WATER_BREATING_BAR_OVERLAY));
+				AbstractGui.blit(new MatrixStack(), airPosX, airPosY, 0, 0, 0, 182, 16, 16, 182);
 			}
 
 			/***********************************
@@ -1380,7 +1444,7 @@ public class BetterOverlay {
 	}
 
 	@SuppressWarnings("deprecation")
-	public static void renderBossBar(ClientBossInfo bossInfo) {
+	public static void renderBossBar(LivingEntity boss) {
 
 		/***********************************
 		 * 
@@ -1404,7 +1468,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		float percentage = bossInfo.getPercent();
+		float percentage = boss.getHealth() / boss.getMaxHealth();
 
 		/***********************************
 		 * 
@@ -1412,7 +1476,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		String name = bossInfo.getName().getString();
+		String name = boss.getName().getString();
 
 		/***********************************
 		 * 
@@ -1452,7 +1516,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.func_238464_a_(new MatrixStack(), bossPosX, (int) (bossPosY * 1.25F), 0, 0, 0, 320, 40, 40, 320);
+		AbstractGui.blit(new MatrixStack(), bossPosX, (int) (bossPosY * 1.25F), 0, 0, 0, 320, 40, 40, 320);
 
 		/***********************************
 		 * 
@@ -1468,7 +1532,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.func_238464_a_(new MatrixStack(), bossPosX, (int) (bossPosY * 1.25F), 0, 0, 0, (int) (percentage * 320), 40, 40, 320);
+		AbstractGui.blit(new MatrixStack(), bossPosX + 35, (int) (bossPosY * 1.25F), 0, 0, 0, (int) (percentage * 250), 40, 40, 250);
 
 		/***********************************
 		 * 
@@ -1484,7 +1548,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.func_238464_a_(new MatrixStack(), bossPosX, (int) (bossPosY * 1.25F), 0, 0, 0, 320, 40, 40, 320);
+		AbstractGui.blit(new MatrixStack(), bossPosX, (int) (bossPosY * 1.25F), 0, 0, 0, 320, 40, 40, 320);
 
 		/***********************************
 		 * 
@@ -1500,39 +1564,43 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		mc.fontRenderer.func_238421_b_(new MatrixStack(), name, bossPosX + 160 - stringWidth / 2, (int) (bossPosY + 5) * 1.25F, 0xFFFFFFFF);
+		mc.fontRenderer.drawString(new MatrixStack(), name, bossPosX + 160 - stringWidth / 2, (int) (bossPosY + 5) * 1.25F, 0xFFFFFFFF);
 
-		/***********************************
-		 * 
-		 * Calculating boss health percentage
-		 * 
-		 ***********************************/
+		if (!textDisabled) {
 
-		percentage = (float) ((int) (percentage * 10000) / 100.0F);
+			/***********************************
+			 * 
+			 * Calculating boss health percentage
+			 * 
+			 ***********************************/
 
-		/***********************************
-		 * 
-		 * Converting boss health percentage to text
-		 * 
-		 ***********************************/
+			percentage = (float) ((int) (percentage * 10000) / 100.0F);
 
-		String percentageText = Float.toString(percentage) + "%";
+			/***********************************
+			 * 
+			 * Converting boss health percentage to text
+			 * 
+			 ***********************************/
 
-		/***********************************
-		 * 
-		 * Calculating boss health percentage width as a text
-		 * 
-		 ***********************************/
+			String percentageText = Float.toString(percentage) + "%";
 
-		stringWidth = mc.fontRenderer.getStringWidth(percentageText);
+			/***********************************
+			 * 
+			 * Calculating boss health percentage width as a text
+			 * 
+			 ***********************************/
 
-		/***********************************
-		 * 
-		 * Drawing boss health percentage on the screen
-		 * 
-		 ***********************************/
+			stringWidth = mc.fontRenderer.getStringWidth(percentageText);
 
-		mc.fontRenderer.func_238421_b_(new MatrixStack(), percentageText, bossPosX + 160 - stringWidth / 2, (int) (bossPosY + 21) * 1.25F, 0xFFFFFFFF);
+			/***********************************
+			 * 
+			 * Drawing boss health percentage on the screen
+			 * 
+			 ***********************************/
+
+			mc.fontRenderer.drawString(new MatrixStack(), percentageText, bossPosX + 160 - stringWidth / 2, (int) (bossPosY + 21) * 1.25F, 0xFFFFFFFF);
+
+		}
 
 		/***********************************
 		 * 

@@ -3,6 +3,7 @@ package com.GenZVirus.BetterUX;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.GenZVirus.BetterUX.Client.File.XMLFileJava;
 import com.GenZVirus.BetterUX.Client.GUI.BetterOverlay;
 
 import net.minecraftforge.common.MinecraftForge;
@@ -41,9 +42,7 @@ public class BetterUX {
 
 		modEventBus.addListener(this::setup);
 		modEventBus.addListener(this::doClientStuff);
-
-		instance = this;
-		
+		instance = this;	
 		// Register ourselves for server and other game events we are interested in
 		MinecraftForge.EVENT_BUS.register(this);
 	}
@@ -52,6 +51,7 @@ public class BetterUX {
 	}
 
 	private void doClientStuff(final FMLClientSetupEvent event) {
+		XMLFileJava.load();	
 		if(ModList.get().isLoaded("vampirism")) {
 			BetterOverlay.isVampirismLoaded = true;
 		}

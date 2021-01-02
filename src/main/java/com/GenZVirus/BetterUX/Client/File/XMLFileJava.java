@@ -40,6 +40,8 @@ public class XMLFileJava {
 	private static final int default_ExpBarPosY = -ForgeIngameGui.left_height;
 	private static final int default_BossBarPosX = -160;
 	private static final int default_BossBarPosY = 0;
+	private static final String default_textDisabled = "false";
+	private static final String default_hasOverlay = "false";
 	private static final String default_Enabled_or_Disabled = "enabled";
 	private static final String default_Texture = "genzvirus";
 
@@ -151,6 +153,16 @@ public class XMLFileJava {
 			Element enabled_or_disabled = document.createElement("Enabled_Disabled");
 			enabled_or_disabled.appendChild(document.createTextNode(default_Enabled_or_Disabled));
 			root.appendChild(enabled_or_disabled);
+
+			// Enabled or Disabled
+			Element hasOverlay = document.createElement("HasOverlay");
+			hasOverlay.appendChild(document.createTextNode(default_hasOverlay));
+			root.appendChild(hasOverlay);
+
+			// Enabled or Disabled
+			Element textDisabled = document.createElement("TextDisabled");
+			textDisabled.appendChild(document.createTextNode(default_textDisabled));
+			root.appendChild(textDisabled);
 
 			// create the xml file
 			// transform the DOM Object to an XML File
@@ -273,6 +285,8 @@ public class XMLFileJava {
 		XMLFileJava.editElement("BossBarPosY", Integer.toString(default_BossBarPosY));
 		XMLFileJava.editElement("Texture", default_Texture);
 		XMLFileJava.editElement("Enabled_Disabled", default_Enabled_or_Disabled);
+		XMLFileJava.editElement("HasOverlay", default_hasOverlay);
+		XMLFileJava.editElement("TextDisabled", default_textDisabled);
 	}
 
 	private static void resetElement(String elementTag) {
@@ -312,9 +326,13 @@ public class XMLFileJava {
 			XMLFileJava.editElement("BossBarPosY", Integer.toString(default_BossBarPosY));
 		} else if (elementTag.contentEquals("Enabled_Disabled")) {
 			XMLFileJava.editElement("Enabled_Disabled", default_Enabled_or_Disabled);
+		} else if (elementTag.contentEquals("HasOverlay")) {
+			XMLFileJava.editElement("HasOverlay", default_hasOverlay);
+		} else if (elementTag.contentEquals("TextDisabled")) {
+			XMLFileJava.editElement("TextDisabled", default_textDisabled);
 		}
 	}
-	
+
 	public static void load() {
 		checkFileAndMake();
 		BetterOverlay.LeftShieldPosX = Integer.parseInt(XMLFileJava.readElement("LeftShieldPosX"));
@@ -335,9 +353,11 @@ public class XMLFileJava {
 		BetterOverlay.BossBarPosX = Integer.parseInt(XMLFileJava.readElement("BossBarPosX"));
 		BetterOverlay.BossBarPosY = Integer.parseInt(XMLFileJava.readElement("BossBarPosY"));
 		BetterOverlay.Enabled_Disabled = XMLFileJava.readElement("Enabled_Disabled");
+		BetterOverlay.HasOverlay = Boolean.parseBoolean(XMLFileJava.readElement("HasOverlay"));
+		BetterOverlay.textDisabled = Boolean.parseBoolean(XMLFileJava.readElement("TextDisabled"));
 		BetterOverlay.updatePositions();
 	}
-	
+
 	public static void save() {
 		checkFileAndMake();
 		XMLFileJava.editElement("LeftShieldPosX", Integer.toString(BetterOverlay.LeftShieldPosX));
@@ -358,6 +378,9 @@ public class XMLFileJava {
 		XMLFileJava.editElement("BossBarPosX", Integer.toString(BetterOverlay.BossBarPosX));
 		XMLFileJava.editElement("BossBarPosY", Integer.toString(BetterOverlay.BossBarPosY));
 		XMLFileJava.editElement("Enabled_Disabled", BetterOverlay.Enabled_Disabled);
+		XMLFileJava.editElement("HasOverlay", Boolean.toString(BetterOverlay.HasOverlay));
+		XMLFileJava.editElement("TextDisabled", Boolean.toString(BetterOverlay.textDisabled));
+
 	}
 
 }

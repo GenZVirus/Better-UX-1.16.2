@@ -23,24 +23,24 @@ public class SelectedOverlay extends Widget {
 	}
 
 	@Override
-	public void func_230430_a_(MatrixStack stack, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+	public void render(MatrixStack stack, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
 		if (!this.isOverlaySelected)
 			return;
 		mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.COLOR));
 
 		// Square/Rectangle
 
-		AbstractGui.func_238464_a_(new MatrixStack(), this.field_230690_l_, this.field_230691_m_, 0, 0, 0, 1, this.func_238483_d_(), 1, 1);
-		AbstractGui.func_238464_a_(new MatrixStack(), this.field_230690_l_, this.field_230691_m_, 0, 0, 0, this.func_230998_h_(), 1, 1, 1);
-		AbstractGui.func_238464_a_(new MatrixStack(), this.field_230690_l_ + this.func_230998_h_(), this.field_230691_m_, 0, 0, 0, 1, this.func_238483_d_(), 1, 1);
-		AbstractGui.func_238464_a_(new MatrixStack(), this.field_230690_l_, this.field_230691_m_ + this.func_238483_d_(), 0, 0, 0, this.func_230998_h_(), 1, 1, 1);
+		AbstractGui.blit(new MatrixStack(), this.x, this.y, 0, 0, 0, 1, this.getHeightRealms(), 1, 1);
+		AbstractGui.blit(new MatrixStack(), this.x, this.y, 0, 0, 0, this.getWidth(), 1, 1, 1);
+		AbstractGui.blit(new MatrixStack(), this.x + this.getWidth(), this.y, 0, 0, 0, 1, this.getHeightRealms(), 1, 1);
+		AbstractGui.blit(new MatrixStack(), this.x, this.y + this.getHeightRealms(), 0, 0, 0, this.getWidth(), 1, 1, 1);
 
 		// Position lines
 
-		AbstractGui.func_238464_a_(new MatrixStack(), this.field_230690_l_ + this.func_230998_h_() / 2, 0, 0, 0, 0, 1, this.field_230691_m_, 1, 1);
-		AbstractGui.func_238464_a_(new MatrixStack(), this.field_230690_l_ + this.func_230998_h_() / 2, this.field_230691_m_ + this.func_238483_d_(), 0, 0, 0, 1, mc.getMainWindow().getScaledHeight() - this.func_238483_d_() - this.field_230691_m_, 1, 1);
-		AbstractGui.func_238464_a_(new MatrixStack(), 0, this.field_230691_m_ + this.func_238483_d_() / 2, 0, 0, 0, this.field_230690_l_, 1, 1, 1);
-		AbstractGui.func_238464_a_(new MatrixStack(), this.field_230690_l_ + this.func_230998_h_(), this.field_230691_m_ + this.func_238483_d_() / 2, 0, 0, 0, mc.getMainWindow().getScaledWidth() - this.func_230998_h_() - this.field_230690_l_, 1, 1, 1);
+		AbstractGui.blit(new MatrixStack(), this.x + this.getWidth() / 2, 0, 0, 0, 0, 1, this.y, 1, 1);
+		AbstractGui.blit(new MatrixStack(), this.x + this.getWidth() / 2, this.y + this.getHeightRealms(), 0, 0, 0, 1, mc.getMainWindow().getScaledHeight() - this.getHeightRealms() - this.y, 1, 1);
+		AbstractGui.blit(new MatrixStack(), 0, this.y + this.getHeightRealms() / 2, 0, 0, 0, this.x, 1, 1, 1);
+		AbstractGui.blit(new MatrixStack(), this.x + this.getWidth(), this.y + this.getHeightRealms() / 2, 0, 0, 0, mc.getMainWindow().getScaledWidth() - this.getWidth() - this.x, 1, 1, 1);
 
 	}
 
@@ -72,13 +72,13 @@ public class SelectedOverlay extends Widget {
 	}
 
 	@Override
-	public void func_230982_a_(double x, double y) {
+	public void onClick(double x, double y) {
 		List<Widget> buttons = EditOverlay.instance.getButtons();
 		for (Widget button : buttons) {
-			int widthIn = button.field_230690_l_;
-			int heightIn = button.field_230691_m_;
-			int width = button.func_230998_h_();
-			int height = button.func_238483_d_();
+			int widthIn = button.x;
+			int heightIn = button.y;
+			int width = button.getWidth();
+			int height = button.getHeightRealms();
 			if (x >= widthIn && x < widthIn + width && y >= heightIn && y < heightIn + height) {
 				if (button instanceof SelectedOverlay) {
 					((SelectedOverlay) button).onPress();

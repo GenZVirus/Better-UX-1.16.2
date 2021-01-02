@@ -11,7 +11,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 public class Settings extends Screen {
 
-	private Button closeButton, resetButton, editButton, changeButton, enable_or_disable;
+	private Button closeButton, resetButton, editButton, changeButton, enable_or_disable_BetterUX, enable_or_disable_text;
 	private Minecraft mc = Minecraft.getInstance();
 
 	public static Settings instance = new Settings(new TranslationTextComponent("Settings"));
@@ -21,54 +21,63 @@ public class Settings extends Screen {
 	}
 
 	@Override
-	protected void func_231160_c_() {
-		super.func_231160_c_();
+	protected void init() {
+		super.init();
 		closeButton = new Button(mc.getMainWindow().getScaledWidth() / 2 + 5, mc.getMainWindow().getScaledHeight() / 2 + 20, 100, 20, new TranslationTextComponent("Close"), (x) -> {
-			this.func_231175_as__();
-		}, Button.field_238486_s_);
+			this.closeScreen();
+		});
 
 		resetButton = new Button(mc.getMainWindow().getScaledWidth() / 2 - 105, mc.getMainWindow().getScaledHeight() / 2 - 5, 100, 20, new TranslationTextComponent("Reset to Default"), (x) -> {
 			XMLFileJava.resetToDefault();
 			XMLFileJava.load();
-		}, Button.field_238486_s_);
+		});
 
 		editButton = new Button(mc.getMainWindow().getScaledWidth() / 2 + 5, mc.getMainWindow().getScaledHeight() / 2 - 5, 100, 20, new TranslationTextComponent("Edit UI"), (x) -> {
 			mc.displayGuiScreen(EditOverlay.instance);
-		}, Button.field_238486_s_);
+		});
 
 		changeButton = new Button(mc.getMainWindow().getScaledWidth() / 2 - 105, mc.getMainWindow().getScaledHeight() / 2 + 20, 100, 20, new TranslationTextComponent("Change Textures"), (x) -> {
 			mc.displayGuiScreen(ChangeTextures.instance);
-		}, Button.field_238486_s_);
-		enable_or_disable = new Button(mc.getMainWindow().getScaledWidth() / 2 - 105, mc.getMainWindow().getScaledHeight() / 2 + 45, 210, 20, XMLFileJava.readElement("Enabled_Disabled").contentEquals("enabled") ? new TranslationTextComponent("Disable Better UX Overlay") : new TranslationTextComponent("Enable Better UX Overlay"), (x) -> {
+		});
+		enable_or_disable_BetterUX = new Button(mc.getMainWindow().getScaledWidth() / 2 - 105, mc.getMainWindow().getScaledHeight() / 2 + 45, 210, 20, XMLFileJava.readElement("Enabled_Disabled").contentEquals("enabled") ? new TranslationTextComponent("Disable Better UX Overlay") : new TranslationTextComponent("Enable Better UX Overlay"), (x) -> {
 			XMLFileJava.checkFileAndMake();
 			if (XMLFileJava.readElement("Enabled_Disabled").contentEquals("enabled")) {
 				XMLFileJava.editElement("Enabled_Disabled", "disabled");
 			} else
 				XMLFileJava.editElement("Enabled_Disabled", "enabled");
-			this.enable_or_disable.func_238482_a_(XMLFileJava.readElement("Enabled_Disabled").contentEquals("enabled") ? new TranslationTextComponent("Disable Better UX Overlay") : new TranslationTextComponent("Enable Better UX Overlay"));
+			this.enable_or_disable_BetterUX.setMessage(XMLFileJava.readElement("Enabled_Disabled").contentEquals("enabled") ? new TranslationTextComponent("Disable Better UX Overlay") : new TranslationTextComponent("Enable Better UX Overlay"));
 			XMLFileJava.load();
-		}, Button.field_238486_s_);
-		this.func_230480_a_(closeButton);
-		this.func_230480_a_(resetButton);
-		this.func_230480_a_(editButton);
-		this.func_230480_a_(changeButton);
-		this.func_230480_a_(enable_or_disable);
+		});
+		enable_or_disable_text = new Button(mc.getMainWindow().getScaledWidth() / 2 - 105, mc.getMainWindow().getScaledHeight() / 2 + 70, 210, 20, XMLFileJava.readElement("TextDisabled").contentEquals("false")? new TranslationTextComponent("Disable Text") : new TranslationTextComponent("Enable Text"), (x) -> {
+			XMLFileJava.checkFileAndMake();
+			if(XMLFileJava.readElement("TextDisabled").contentEquals("false")) {
+				XMLFileJava.editElement("TextDisabled", "true");
+			} else XMLFileJava.editElement("TextDisabled", "false");
+			this.enable_or_disable_text.setMessage(XMLFileJava.readElement("TextDisabled").contentEquals("false")? new TranslationTextComponent("Disable Text") : new TranslationTextComponent("Enable Text"));
+			XMLFileJava.load();
+		});
+		this.addButton(closeButton);
+		this.addButton(resetButton);
+		this.addButton(editButton);
+		this.addButton(changeButton);
+		this.addButton(enable_or_disable_BetterUX);
+		this.addButton(enable_or_disable_text);
 	}
 
 	@Override
-	public boolean func_231178_ax__() {
+	public boolean shouldCloseOnEsc() {
 		return true;
 	}
 
 	@Override
-	public boolean func_231177_au__() {
+	public boolean isPauseScreen() {
 		return true;
 	}
 
 	@Override
-	public void func_230430_a_(MatrixStack stack, int p_render_1_, int p_render_2_, float p_render_3_) {
-		this.func_230446_a_(stack);
-		super.func_230430_a_(stack, p_render_1_, p_render_2_, p_render_3_);
+	public void render(MatrixStack stack, int p_render_1_, int p_render_2_, float p_render_3_) {
+		this.renderBackground(stack);
+		super.render(stack, p_render_1_, p_render_2_, p_render_3_);
 	}
 
 }
