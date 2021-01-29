@@ -49,6 +49,8 @@ public class BetterOverlay {
 	public static boolean HasOverlay = false;
 	public static boolean wasHoldingFood = false;
 	public static boolean textDisabled = false;
+	public static boolean soundEffects = true;
+	public static String Special;
 
 	/***********************************
 	 * 
@@ -250,6 +252,8 @@ public class BetterOverlay {
 		 ***********************************/
 
 		if (mc.player.isCreative()) { return; }
+
+//		if (!Special.equals("NONE")) { return; }
 
 		/***********************************
 		 * 

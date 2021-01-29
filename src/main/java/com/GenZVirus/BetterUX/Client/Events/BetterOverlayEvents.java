@@ -11,11 +11,14 @@ import com.GenZVirus.BetterUX.Client.GUI.BetterUXResources;
 import com.GenZVirus.BetterUX.Client.GUI.EditOverlay;
 import com.GenZVirus.BetterUX.Client.GUI.SelectedOverlay;
 import com.GenZVirus.BetterUX.Client.GUI.Settings;
+import com.GenZVirus.BetterUX.Client.Init.SoundInit;
 import com.GenZVirus.BetterUX.Util.KeyboardHelper;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.ISound;
+import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.ConfirmOpenLinkScreen;
 import net.minecraft.client.gui.screen.OptionsScreen;
@@ -25,8 +28,10 @@ import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.ClickEvent;
@@ -57,6 +62,36 @@ public class BetterOverlayEvents {
 	public static int mainWindowHeight = 0;
 
 	public static int checkForBosses = 0;
+	public static int SEcooldown = 0;
+
+	public static ISound heartbeat;
+
+	@SubscribeEvent
+	public static void soundEffects(ClientTickEvent event) {
+		if (mc.world == null) { return; }
+
+		assert mc.player != null;
+		if(!BetterOverlay.soundEffects) return;
+		if(mc.player.getHealth() > mc.player.getMaxHealth() / 2) return;
+		if (SEcooldown <= 0) {
+			PlayerEntity player = mc.player;
+			BlockPos pos = player.getPosition();
+			if (heartbeat == null) {
+				heartbeat = new SimpleSound(SoundInit.HEARTBEAT.get(), SoundCategory.MASTER, 1.0f, 1.0f, pos);
+			} else {
+				BlockPos currentPos = new BlockPos(heartbeat.getX(), heartbeat.getY(), heartbeat.getZ());
+				if (mc.getSoundHandler().isPlaying(heartbeat))
+					return;
+				if (!currentPos.equals(pos)) {
+					heartbeat = new SimpleSound(SoundInit.HEARTBEAT.get(), SoundCategory.MASTER, 1.0f, 1.0f, pos);
+				}
+			}
+			mc.getSoundHandler().play(heartbeat);
+			SEcooldown = 40;
+		} else {
+			SEcooldown--;
+		}
+	}
 	
 	@SubscribeEvent(receiveCanceled = true)
 	public static void Overlay(RenderGameOverlayEvent.Pre event) {

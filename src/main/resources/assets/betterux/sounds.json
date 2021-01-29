@@ -1,0 +1,12 @@
+{
+	"heartbeat": {
+		"category": "ambient",
+		"subtitle": "heartbeat",
+		"sounds":[
+		{
+			"name": "betterux:effects/heartbeat",
+			"stream": true  
+		}
+		]
+	}
+}

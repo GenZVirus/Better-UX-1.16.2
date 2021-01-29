@@ -44,6 +44,7 @@ public class XMLFileJava {
 	private static final String default_hasOverlay = "false";
 	private static final String default_Enabled_or_Disabled = "enabled";
 	private static final String default_Texture = "genzvirus";
+	private static final String default_soundeffects = "true";
 
 	public static String default_xmlFilePath = "betterux/settings.xml";
 
@@ -163,6 +164,11 @@ public class XMLFileJava {
 			Element textDisabled = document.createElement("TextDisabled");
 			textDisabled.appendChild(document.createTextNode(default_textDisabled));
 			root.appendChild(textDisabled);
+
+			// Enabled or Disabled
+			Element soundEffects = document.createElement("SoundEffects");
+			soundEffects.appendChild(document.createTextNode(default_soundeffects));
+			root.appendChild(soundEffects);
 
 			// create the xml file
 			// transform the DOM Object to an XML File
@@ -287,6 +293,7 @@ public class XMLFileJava {
 		XMLFileJava.editElement("Enabled_Disabled", default_Enabled_or_Disabled);
 		XMLFileJava.editElement("HasOverlay", default_hasOverlay);
 		XMLFileJava.editElement("TextDisabled", default_textDisabled);
+		XMLFileJava.editElement("SoundEffects", default_soundeffects);
 	}
 
 	private static void resetElement(String elementTag) {
@@ -330,6 +337,8 @@ public class XMLFileJava {
 			XMLFileJava.editElement("HasOverlay", default_hasOverlay);
 		} else if (elementTag.contentEquals("TextDisabled")) {
 			XMLFileJava.editElement("TextDisabled", default_textDisabled);
+		} else if (elementTag.contentEquals("SoundEffects")) {
+			XMLFileJava.editElement("SoundEffects", default_soundeffects);
 		}
 	}
 
@@ -355,6 +364,7 @@ public class XMLFileJava {
 		BetterOverlay.Enabled_Disabled = XMLFileJava.readElement("Enabled_Disabled");
 		BetterOverlay.HasOverlay = Boolean.parseBoolean(XMLFileJava.readElement("HasOverlay"));
 		BetterOverlay.textDisabled = Boolean.parseBoolean(XMLFileJava.readElement("TextDisabled"));
+		BetterOverlay.soundEffects = Boolean.parseBoolean(XMLFileJava.readElement("SoundEffects"));
 		BetterOverlay.updatePositions();
 	}
 
@@ -380,7 +390,7 @@ public class XMLFileJava {
 		XMLFileJava.editElement("Enabled_Disabled", BetterOverlay.Enabled_Disabled);
 		XMLFileJava.editElement("HasOverlay", Boolean.toString(BetterOverlay.HasOverlay));
 		XMLFileJava.editElement("TextDisabled", Boolean.toString(BetterOverlay.textDisabled));
-
+		XMLFileJava.editElement("SoundEffects", Boolean.toString(BetterOverlay.soundEffects));
 	}
 
 }

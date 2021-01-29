@@ -11,7 +11,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 public class Settings extends Screen {
 
-	private Button closeButton, resetButton, editButton, changeButton, enable_or_disable_BetterUX, enable_or_disable_text;
+	private Button closeButton, resetButton, editButton, changeButton, enable_or_disable_BetterUX, enable_or_disable_text, enable_or_disable_soundeffects;
 	private Minecraft mc = Minecraft.getInstance();
 
 	public static Settings instance = new Settings(new TranslationTextComponent("Settings"));
@@ -56,12 +56,21 @@ public class Settings extends Screen {
 			this.enable_or_disable_text.setMessage(XMLFileJava.readElement("TextDisabled").contentEquals("false")? new TranslationTextComponent("Disable Text") : new TranslationTextComponent("Enable Text"));
 			XMLFileJava.load();
 		});
+		enable_or_disable_soundeffects = new Button(mc.getMainWindow().getScaledWidth() / 2 - 105, mc.getMainWindow().getScaledHeight() / 2 - 30, 210, 20, XMLFileJava.readElement("SoundEffects").contentEquals("false")? new TranslationTextComponent("Enable Sound Effects") : new TranslationTextComponent("Disable Sound Effects"), (x) -> {
+			XMLFileJava.checkFileAndMake();
+			if(XMLFileJava.readElement("SoundEffects").contentEquals("false")) {
+				XMLFileJava.editElement("SoundEffects", "true");
+			} else XMLFileJava.editElement("SoundEffects", "false");
+			this.enable_or_disable_soundeffects.setMessage(XMLFileJava.readElement("SoundEffects").contentEquals("false")? new TranslationTextComponent("Enable Sound Effects") : new TranslationTextComponent("Disable Sound Effects"));
+			XMLFileJava.load();
+		});
 		this.addButton(closeButton);
 		this.addButton(resetButton);
 		this.addButton(editButton);
 		this.addButton(changeButton);
 		this.addButton(enable_or_disable_BetterUX);
 		this.addButton(enable_or_disable_text);
+		this.addButton(enable_or_disable_soundeffects);
 	}
 
 	@Override
