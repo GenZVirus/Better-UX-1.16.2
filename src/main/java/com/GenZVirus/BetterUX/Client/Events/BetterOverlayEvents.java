@@ -11,7 +11,6 @@ import com.GenZVirus.BetterUX.Client.GUI.BetterUXResources;
 import com.GenZVirus.BetterUX.Client.GUI.EditOverlay;
 import com.GenZVirus.BetterUX.Client.GUI.SelectedOverlay;
 import com.GenZVirus.BetterUX.Client.GUI.Settings;
-import com.GenZVirus.BetterUX.Client.Init.SoundInit;
 import com.GenZVirus.BetterUX.Util.KeyboardHelper;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -28,7 +27,9 @@ import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -62,7 +63,6 @@ public class BetterOverlayEvents {
 	public static int mainWindowHeight = 0;
 
 	public static int checkForBosses = 0;
-	public static int SEcooldown = 0;
 
 	public static ISound heartbeat;
 
@@ -73,24 +73,23 @@ public class BetterOverlayEvents {
 		assert mc.player != null;
 		if(!BetterOverlay.soundEffects) return;
 		if(mc.player.getHealth() > mc.player.getMaxHealth() / 2) return;
-		if (SEcooldown <= 0) {
 			PlayerEntity player = mc.player;
 			BlockPos pos = player.getPosition();
 			if (heartbeat == null) {
-				heartbeat = new SimpleSound(SoundInit.HEARTBEAT.get(), SoundCategory.MASTER, 1.0f, 1.0f, pos);
+				if(mc.player.getHealth() > mc.player.getMaxHealth() / 4)
+				heartbeat = new SimpleSound(new SoundEvent(new ResourceLocation(BetterUX.MOD_ID, "heartbeat")), SoundCategory.MASTER, 1.0f, 1.0f, pos);
+				else heartbeat = new SimpleSound(new SoundEvent(new ResourceLocation(BetterUX.MOD_ID, "heartbeat2")), SoundCategory.MASTER, 1.0f, 1.0f, pos);
 			} else {
 				BlockPos currentPos = new BlockPos(heartbeat.getX(), heartbeat.getY(), heartbeat.getZ());
 				if (mc.getSoundHandler().isPlaying(heartbeat))
 					return;
 				if (!currentPos.equals(pos)) {
-					heartbeat = new SimpleSound(SoundInit.HEARTBEAT.get(), SoundCategory.MASTER, 1.0f, 1.0f, pos);
+					if(mc.player.getHealth() > mc.player.getMaxHealth() / 4)
+						heartbeat = new SimpleSound(new SoundEvent(new ResourceLocation(BetterUX.MOD_ID, "heartbeat")), SoundCategory.MASTER, 1.0f, 1.0f, pos);
+						else heartbeat = new SimpleSound(new SoundEvent(new ResourceLocation(BetterUX.MOD_ID, "heartbeat2")), SoundCategory.MASTER, 1.0f, 1.0f, pos);
 				}
 			}
 			mc.getSoundHandler().play(heartbeat);
-			SEcooldown = 40;
-		} else {
-			SEcooldown--;
-		}
 	}
 	
 	@SubscribeEvent(receiveCanceled = true)
@@ -126,6 +125,10 @@ public class BetterOverlayEvents {
 		if (event.getType() == RenderGameOverlayEvent.ElementType.BOSSINFO) {
 			event.setCanceled(true);
 			checkForBosses = 100;
+		}
+		if(event.getType() == RenderGameOverlayEvent.ElementType.POTION_ICONS) {
+			event.setCanceled(true);
+			BetterOverlay.renderPotionEffects();
 		}
 	}
 
@@ -188,6 +191,8 @@ public class BetterOverlayEvents {
 			mainWindowWidth = mc.getMainWindow().getScaledWidth();
 			mainWindowHeight = mc.getMainWindow().getScaledHeight();
 			BetterOverlay.updatePositions();
+			if(mc.currentScreen != null)
+			mc.currentScreen.init(mc, mc.getMainWindow().getScaledWidth(), mc.getMainWindow().getScaledHeight());
 		}
 	}
 
@@ -238,7 +243,6 @@ public class BetterOverlayEvents {
 			try {
 				openLink(new URI(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.com/invite/ty6gQaD").getValue()));
 			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

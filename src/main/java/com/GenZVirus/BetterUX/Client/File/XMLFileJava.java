@@ -24,10 +24,10 @@ import net.minecraftforge.client.gui.ForgeIngameGui;
 
 public class XMLFileJava {
 
-	private static final int default_LeftShieldPosX = -124;
-	private static final int default_LeftShieldPosY = -ForgeIngameGui.left_height - 15;
-	private static final int default_RightShieldPosX = 92;
-	private static final int default_RightShieldPosY = -ForgeIngameGui.left_height - 15;
+	private static final int default_LeftShieldPosX = -107;
+	private static final int default_LeftShieldPosY = -ForgeIngameGui.left_height - 10;
+	private static final int default_RightShieldPosX = 94;
+	private static final int default_RightShieldPosY = -ForgeIngameGui.left_height - 10;
 	private static final int default_HealthBarPosX = -91;
 	private static final int default_HealthBarPosY = -ForgeIngameGui.left_height - 11;
 	private static final int default_FirePosX = -100;
@@ -40,6 +40,8 @@ public class XMLFileJava {
 	private static final int default_ExpBarPosY = -ForgeIngameGui.left_height;
 	private static final int default_BossBarPosX = -160;
 	private static final int default_BossBarPosY = 0;
+	private static final int default_EffectsPosX = 0;
+	private static final int default_EffectsPosY = 0;
 	private static final String default_textDisabled = "false";
 	private static final String default_hasOverlay = "false";
 	private static final String default_Enabled_or_Disabled = "enabled";
@@ -170,6 +172,16 @@ public class XMLFileJava {
 			soundEffects.appendChild(document.createTextNode(default_soundeffects));
 			root.appendChild(soundEffects);
 
+			// Enabled or Disabled
+			Element effectsPosX = document.createElement("EffectsPosX");
+			effectsPosX.appendChild(document.createTextNode(Integer.toString(default_EffectsPosX)));
+			root.appendChild(effectsPosX);
+
+			// Enabled or Disabled
+			Element effectsPosY = document.createElement("EffectsPosY");
+			effectsPosY.appendChild(document.createTextNode(Integer.toString(default_EffectsPosY)));
+			root.appendChild(effectsPosY);
+
 			// create the xml file
 			// transform the DOM Object to an XML File
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -294,6 +306,8 @@ public class XMLFileJava {
 		XMLFileJava.editElement("HasOverlay", default_hasOverlay);
 		XMLFileJava.editElement("TextDisabled", default_textDisabled);
 		XMLFileJava.editElement("SoundEffects", default_soundeffects);
+		XMLFileJava.editElement("EffectsPosX", Integer.toString(default_EffectsPosX));
+		XMLFileJava.editElement("EffectsPosY", Integer.toString(default_EffectsPosY));
 	}
 
 	private static void resetElement(String elementTag) {
@@ -339,6 +353,10 @@ public class XMLFileJava {
 			XMLFileJava.editElement("TextDisabled", default_textDisabled);
 		} else if (elementTag.contentEquals("SoundEffects")) {
 			XMLFileJava.editElement("SoundEffects", default_soundeffects);
+		} else if (elementTag.contentEquals("EffectsPosX")) {
+			XMLFileJava.editElement("EffectsPosX", Integer.toString(default_EffectsPosX));
+		} else if (elementTag.contentEquals("EffectsPosY")) {
+			XMLFileJava.editElement("EffectsPosY", Integer.toString(default_EffectsPosY));
 		}
 	}
 
@@ -365,6 +383,8 @@ public class XMLFileJava {
 		BetterOverlay.HasOverlay = Boolean.parseBoolean(XMLFileJava.readElement("HasOverlay"));
 		BetterOverlay.textDisabled = Boolean.parseBoolean(XMLFileJava.readElement("TextDisabled"));
 		BetterOverlay.soundEffects = Boolean.parseBoolean(XMLFileJava.readElement("SoundEffects"));
+		BetterOverlay.EffectsPosX = Integer.parseInt(XMLFileJava.readElement("EffectsPosX"));
+		BetterOverlay.EffectsPosY = Integer.parseInt(XMLFileJava.readElement("EffectsPosY"));
 		BetterOverlay.updatePositions();
 	}
 
@@ -391,6 +411,8 @@ public class XMLFileJava {
 		XMLFileJava.editElement("HasOverlay", Boolean.toString(BetterOverlay.HasOverlay));
 		XMLFileJava.editElement("TextDisabled", Boolean.toString(BetterOverlay.textDisabled));
 		XMLFileJava.editElement("SoundEffects", Boolean.toString(BetterOverlay.soundEffects));
+		XMLFileJava.editElement("EffectsPosX", Integer.toString(BetterOverlay.EffectsPosX));
+		XMLFileJava.editElement("EffectsPosY", Integer.toString(BetterOverlay.EffectsPosY));
 	}
 
 }

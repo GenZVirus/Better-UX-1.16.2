@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.GenZVirus.BetterUX.Client.File.XMLFileJava;
 import com.GenZVirus.BetterUX.Client.GUI.BetterOverlay;
-import com.GenZVirus.BetterUX.Client.Init.SoundInit;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -44,11 +43,6 @@ public class BetterUX {
 		modEventBus.addListener(this::setup);
 		modEventBus.addListener(this::doClientStuff);
 		instance = this;
-
-		// Registering custom sounds
-
-		SoundInit.SOUNDS.register(modEventBus);
-		LOGGER.info("Sounds loaded successfully");
 
 		// Register ourselves for server and other game events we are interested in
 		MinecraftForge.EVENT_BUS.register(this);

@@ -1,23 +1,40 @@
 package com.GenZVirus.BetterUX.Client.GUI;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.lwjgl.opengl.GL11;
 
 import com.GenZVirus.BetterUX.Client.Events.BetterOverlayEvents;
 import com.GenZVirus.BetterUX.ModCompatibility.VampirismComp;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.screen.inventory.ContainerScreen;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.PotionSpriteUploader;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Effect;
+import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.CombatRules;
 import net.minecraft.util.FoodStats;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -45,6 +62,8 @@ public class BetterOverlay {
 	public static String Texture;
 	public static int BossBarPosX = 0;
 	public static int BossBarPosY = 0;
+	public static int EffectsPosX = 0;
+	public static int EffectsPosY = 0;
 	public static String Enabled_Disabled;
 	public static boolean HasOverlay = false;
 	public static boolean wasHoldingFood = false;
@@ -123,6 +142,15 @@ public class BetterOverlay {
 
 	public static int bossPosX = mc.getMainWindow().getScaledWidth() / 2 + BossBarPosX;
 	public static int bossPosY = BossBarPosY;
+
+	/***********************************
+	 * 
+	 * Setting the Effects bar position
+	 * 
+	 ***********************************/
+
+	public static int effectsPosX = mc.getMainWindow().getScaledWidth() + EffectsPosX;
+	public static int effectsPosY = EffectsPosY;
 
 	/***********************************
 	 * 
@@ -993,14 +1021,6 @@ public class BetterOverlay {
 
 		/***********************************
 		 * 
-		 * Binding Left Shield image to the texture manager
-		 * 
-		 ***********************************/
-
-		mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.ARMOR_LEFT));
-
-		/***********************************
-		 * 
 		 * Enable image transparency
 		 * 
 		 ***********************************/
@@ -1023,46 +1043,6 @@ public class BetterOverlay {
 
 		float toughness = (float) mc.player.getAttribute(Attributes.ARMOR_TOUGHNESS).getValue();
 
-		/***********************************
-		 * 
-		 * Scaling down everything that get's renderer from this point forward
-		 * 
-		 ***********************************/
-
-		RenderSystem.scalef(0.5F, 0.5F, 0.5F);
-
-		/***********************************
-		 * 
-		 * Displaying the left shield on the screen
-		 * 
-		 ***********************************/
-
-		AbstractGui.blit(new MatrixStack(), leftShieldPosX * 2, leftShieldPosY * 2, 0, 0, 0, 64, 64, 64, 64);
-
-		/***********************************
-		 * 
-		 * Binding the right shield to the texture manager
-		 * 
-		 ***********************************/
-
-		mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.ARMOR_RIGHT));
-
-		/***********************************
-		 * 
-		 * Displaying the right shield on the screen
-		 * 
-		 ***********************************/
-
-		AbstractGui.blit(new MatrixStack(), rightShieldPosX * 2, rightShieldPosY * 2, 0, 0, 0, 64, 64, 64, 64);
-
-		/***********************************
-		 * 
-		 * Scaling back up everything to the original dimensions
-		 * 
-		 ***********************************/
-
-		RenderSystem.scalef(2.0F, 2.0F, 2.0F);
-
 		if (!textDisabled) {
 
 			/***********************************
@@ -1080,15 +1060,18 @@ public class BetterOverlay {
 				}
 				if (damageReduction > 100)
 					damageReduction = 100;
-				leftShieldDamageReductionText = damageReduction + "%";
+				leftShieldDamageReductionText = (damageReduction < 10 ? " " : "") + damageReduction + "%";
+
+				List<String> list = Lists.newArrayList();
+				list.add(leftShieldDamageReductionText);
 
 				/***********************************
 				 * 
 				 * Drawing the damage reduction amount on the left shield
 				 * 
 				 ***********************************/
-
-				mc.fontRenderer.drawString(new MatrixStack(), leftShieldDamageReductionText, leftShieldPosX + 16 - mc.fontRenderer.getStringWidth(leftShieldDamageReductionText) / 2, leftShieldPosY + 10, 0xFFFFFFFF);
+				renderLeftShieldText(list, leftShieldPosX - 24 - mc.fontRenderer.getStringWidth(leftShieldDamageReductionText) / 2, leftShieldPosY + 14, mc.fontRenderer);
+//				mc.fontRenderer.drawString(new MatrixStack(), leftShieldDamageReductionText, leftShieldPosX + 16 - mc.fontRenderer.getStringWidth(leftShieldDamageReductionText) / 2, leftShieldPosY + 10, 0xFFFFFFFF);
 
 				damageReduction = Math.round(4.0 * totalArmor * 10) / 10;
 				for (ItemStack stack : mc.player.getArmorInventoryList()) {
@@ -1096,35 +1079,94 @@ public class BetterOverlay {
 				}
 				if (damageReduction > 100)
 					damageReduction = 100;
-				rightShieldDamageReductionText = damageReduction + "%";
+				rightShieldDamageReductionText = (damageReduction < 10 ? " " : "") + damageReduction + "%";
+
+				list.remove(leftShieldDamageReductionText);
+				list.add(rightShieldDamageReductionText);
 
 				/***********************************
 				 * 
 				 * Drawing the damage reduction amount on the right shield
 				 * 
 				 ***********************************/
+				renderRightShieldText(list, rightShieldPosX + 3 - mc.fontRenderer.getStringWidth(rightShieldDamageReductionText) / 2, rightShieldPosY + 14, mc.fontRenderer);
 
-				mc.fontRenderer.drawString(new MatrixStack(), rightShieldDamageReductionText, rightShieldPosX + 17 - mc.fontRenderer.getStringWidth(rightShieldDamageReductionText) / 2, rightShieldPosY + 10, 0xFFFFFFFF);
+//				mc.fontRenderer.drawString(new MatrixStack(), rightShieldDamageReductionText, rightShieldPosX + 17 - mc.fontRenderer.getStringWidth(rightShieldDamageReductionText) / 2, rightShieldPosY + 10, 0xFFFFFFFF);
 			} else {
+
+				List<String> list = Lists.newArrayList();
+				list.add(leftShieldDamageReductionText);
 
 				/***********************************
 				 * 
 				 * Drawing the damage reduction amount on the left shield
 				 * 
 				 ***********************************/
+				renderLeftShieldText(list, leftShieldPosX - 24 - mc.fontRenderer.getStringWidth(leftShieldDamageReductionText) / 2, leftShieldPosY + 14, mc.fontRenderer);
+//				mc.fontRenderer.drawString(new MatrixStack(), leftShieldDamageReductionText, leftShieldPosX + 16 - mc.fontRenderer.getStringWidth(leftShieldDamageReductionText) / 2, leftShieldPosY + 10, 0xFFFFFFFF);
 
-				mc.fontRenderer.drawString(new MatrixStack(), leftShieldDamageReductionText, leftShieldPosX + 16 - mc.fontRenderer.getStringWidth(leftShieldDamageReductionText) / 2, leftShieldPosY + 10, 0xFFFFFFFF);
-
+				list.remove(leftShieldDamageReductionText);
 				/***********************************
 				 * 
 				 * Drawing the damage reduction amount on the right shield
 				 * 
 				 ***********************************/
-
-				mc.fontRenderer.drawString(new MatrixStack(), rightShieldDamageReductionText, rightShieldPosX + 17 - mc.fontRenderer.getStringWidth(rightShieldDamageReductionText) / 2, rightShieldPosY + 10, 0xFFFFFFFF);
+				list.add(rightShieldDamageReductionText);
+				renderRightShieldText(list, rightShieldPosX + 3 - mc.fontRenderer.getStringWidth(rightShieldDamageReductionText) / 2, rightShieldPosY + 14, mc.fontRenderer);
+//				mc.fontRenderer.drawString(new MatrixStack(), rightShieldDamageReductionText, rightShieldPosX + 17 - mc.fontRenderer.getStringWidth(rightShieldDamageReductionText) / 2, rightShieldPosY + 10, 0xFFFFFFFF);
 
 			}
 		}
+		
+		/***********************************
+		 * 
+		 * Scaling down everything that get's renderer from this point forward
+		 * 
+		 ***********************************/
+
+		RenderSystem.scalef(0.2F, 0.2F, 0.2F);
+		
+		/***********************************
+		 * 
+		 * Binding Left Shield image to the texture manager
+		 * 
+		 ***********************************/
+
+		mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.ARMOR_LEFT));
+
+		/***********************************
+		 * 
+		 * Displaying the left shield on the screen
+		 * 
+		 ***********************************/
+
+		AbstractGui.blit(new MatrixStack(), leftShieldPosX * 5, leftShieldPosY * 5, 0, 0, 0, 64, 64, 64, 64);
+
+		/***********************************
+		 * 
+		 * Binding the right shield to the texture manager
+		 * 
+		 ***********************************/
+
+		mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.ARMOR_RIGHT));
+
+		/***********************************
+		 * 
+		 * Displaying the right shield on the screen
+		 * 
+		 ***********************************/
+
+		AbstractGui.blit(new MatrixStack(), rightShieldPosX * 5, rightShieldPosY * 5, 0, 0, 0, 64, 64, 64, 64);
+
+		/***********************************
+		 * 
+		 * Scaling back up everything to the original dimensions
+		 * 
+		 ***********************************/
+
+		RenderSystem.scalef(5.0F, 5.0F, 5.0F);
+
+		
 		/***********************************
 		 * 
 		 * Disable image transparency
@@ -1631,6 +1673,85 @@ public class BetterOverlay {
 		mc.getProfiler().endSection();
 	}
 
+	@SuppressWarnings("deprecation")
+	public static void renderPotionEffects() {
+
+		/***********************************
+		 * 
+		 * Checking if the player is inside a world
+		 * 
+		 ***********************************/
+
+		checkInGame();
+
+		Collection<EffectInstance> collection = mc.player.getActivePotionEffects();
+		if (!collection.isEmpty()) {
+			RenderSystem.enableBlend();
+			int i = 0;
+			int j = 0;
+			PotionSpriteUploader potionspriteuploader = mc.getPotionSpriteUploader();
+			List<Runnable> list = Lists.newArrayListWithExpectedSize(collection.size());
+			mc.getTextureManager().bindTexture(ContainerScreen.INVENTORY_BACKGROUND);
+
+			for (EffectInstance effectinstance : Ordering.natural().reverse().sortedCopy(collection)) {
+				Effect effect = effectinstance.getPotion();
+				if (!effectinstance.shouldRenderHUD())
+					continue;
+				// Rebind in case previous renderHUDEffect changed texture
+				mc.getTextureManager().bindTexture(ContainerScreen.INVENTORY_BACKGROUND);
+				if (effectinstance.isShowIcon()) {
+					int k = effectsPosX;
+					int l = effectsPosY;
+					if (mc.isDemo()) {
+						l += 15;
+					}
+
+					if (effect.isBeneficial()) {
+						++i;
+						if (effectsPosX > mc.getMainWindow().getScaledWidth() / 2) {
+							k = k - 25 * i;
+						} else {
+							k = k + 25 * i;
+						}
+					} else {
+						++j;
+						if (effectsPosX > mc.getMainWindow().getScaledWidth() / 2) {
+							k = k - 25 * j;
+						} else {
+							k = k + 25 * j;
+						}
+						l += 26;
+					}
+
+					RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+					float f = 1.0F;
+					if (effectinstance.isAmbient()) {
+						AbstractGui.blit(new MatrixStack(), k, l, -90, 165, 166, 24, 24, 256, 256);
+					} else {
+						AbstractGui.blit(new MatrixStack(), k, l, -90, 141, 166, 24, 24, 256, 256);
+						if (effectinstance.getDuration() <= 200) {
+							int i1 = 10 - effectinstance.getDuration() / 20;
+							f = MathHelper.clamp((float) effectinstance.getDuration() / 10.0F / 5.0F * 0.5F, 0.0F, 0.5F) + MathHelper.cos((float) effectinstance.getDuration() * (float) Math.PI / 5.0F) * MathHelper.clamp((float) i1 / 10.0F * 0.25F, 0.0F, 0.25F);
+						}
+					}
+
+					TextureAtlasSprite textureatlassprite = potionspriteuploader.getSprite(effect);
+					int j1 = k;
+					int k1 = l;
+					float f1 = f;
+					list.add(() -> {
+						mc.getTextureManager().bindTexture(textureatlassprite.getAtlasTexture().getTextureLocation());
+						RenderSystem.color4f(1.0F, 1.0F, 1.0F, f1);
+						AbstractGui.blit(new MatrixStack(), j1 + 3, k1 + 3, -90, 18, 18, textureatlassprite);
+					});
+					effectinstance.renderHUDEffect(mc.currentScreen, new MatrixStack(), k, l, (float) -90, f);
+				}
+			}
+
+			list.forEach(Runnable::run);
+		}
+	}
+
 	/***********************************
 	 * 
 	 * UPDATE ALL BARS POSITIONS
@@ -1645,8 +1766,8 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		leftShieldPosX = mc.getMainWindow().getScaledWidth() / 2 + LeftShieldPosX;
-		leftShieldPosY = mc.getMainWindow().getScaledHeight() + LeftShieldPosY;
+		updateLeftShieldPosX();
+		updateLeftShieldPosY();
 
 		/***********************************
 		 * 
@@ -1654,8 +1775,8 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		rightShieldPosX = mc.getMainWindow().getScaledWidth() / 2 + RightShieldPosX;
-		rightShieldPosY = mc.getMainWindow().getScaledHeight() + RightShieldPosY;
+		updateRightShieldPosX();
+		updateRightShieldPosY();
 
 		/***********************************
 		 * 
@@ -1663,8 +1784,8 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		HealthPosX = mc.getMainWindow().getScaledWidth() / 2 + HealthBarPosX;
-		HealthPosY = mc.getMainWindow().getScaledHeight() + HealthBarPosY;
+		updateHealthPosX();
+		updateHealthPosY();
 
 		/***********************************
 		 * 
@@ -1672,8 +1793,8 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		firePosX = mc.getMainWindow().getScaledWidth() / 2 + FirePosX;
-		firePosY = mc.getMainWindow().getScaledHeight() + FirePosY;
+		updateFirePosX();
+		updateFirePosY();
 
 		/***********************************
 		 * 
@@ -1681,8 +1802,8 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		foodPosX = mc.getMainWindow().getScaledWidth() / 2 + FoodBarPosX;
-		foodPosY = mc.getMainWindow().getScaledHeight() + FoodBarPosY;
+		updateFoodPosX();
+		updateFoodPosY();
 
 		/***********************************
 		 * 
@@ -1690,8 +1811,8 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		airPosX = mc.getMainWindow().getScaledWidth() / 2 + AirBarPosX;
-		airPosY = mc.getMainWindow().getScaledHeight() + AirBarPosY;
+		updateAirPosX();
+		updateAirPosY();
 
 		/***********************************
 		 * 
@@ -1699,8 +1820,8 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		expPosX = mc.getMainWindow().getScaledWidth() / 2 + ExpBarPosX;
-		expPosY = mc.getMainWindow().getScaledHeight() + ExpBarPosY;
+		updateExpPosX();
+		updateExpPosY();
 
 		/***********************************
 		 * 
@@ -1708,8 +1829,17 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		bossPosX = mc.getMainWindow().getScaledWidth() / 2 + BossBarPosX;
-		bossPosY = BossBarPosY;
+		updateBossPosX();
+		updateBossPosY();
+
+		/***********************************
+		 * 
+		 * Update effects
+		 * 
+		 ***********************************/
+
+		updateEffectsPosX();
+		updateEffectsPosY();
 	}
 
 	/***********************************
@@ -1720,10 +1850,22 @@ public class BetterOverlay {
 
 	public static void updateHealthPosX() {
 		HealthPosX = mc.getMainWindow().getScaledWidth() / 2 + HealthBarPosX;
+		if (HealthPosX < 0) {
+			HealthPosX = 0;
+		}
+		if (HealthPosX > mc.getMainWindow().getScaledWidth() - 90) {
+			HealthPosX = mc.getMainWindow().getScaledWidth() - 90;
+		}
 	}
 
 	public static void updateHealthPosY() {
 		HealthPosY = mc.getMainWindow().getScaledHeight() + HealthBarPosY;
+		if (HealthPosY < 0) {
+			HealthPosY = 0;
+		}
+		if (HealthPosY > mc.getMainWindow().getScaledHeight() - 10) {
+			HealthPosY = mc.getMainWindow().getScaledHeight() - 10;
+		}
 	}
 
 	/***********************************
@@ -1734,10 +1876,22 @@ public class BetterOverlay {
 
 	public static void updateLeftShieldPosX() {
 		leftShieldPosX = mc.getMainWindow().getScaledWidth() / 2 + LeftShieldPosX;
+		if (leftShieldPosX < 0) {
+			leftShieldPosX = 0;
+		}
+		if (leftShieldPosX > mc.getMainWindow().getScaledWidth() - 32) {
+			leftShieldPosX = mc.getMainWindow().getScaledWidth() - 32;
+		}
 	}
 
 	public static void updateLeftShieldPosY() {
 		leftShieldPosY = mc.getMainWindow().getScaledHeight() + LeftShieldPosY;
+		if (leftShieldPosY < 0) {
+			leftShieldPosY = 0;
+		}
+		if (leftShieldPosY > mc.getMainWindow().getScaledHeight() - 32) {
+			leftShieldPosY = mc.getMainWindow().getScaledHeight() - 32;
+		}
 	}
 
 	/***********************************
@@ -1746,12 +1900,24 @@ public class BetterOverlay {
 	 * 
 	 ***********************************/
 
-	public static void updateRightSHieldPosX() {
+	public static void updateRightShieldPosX() {
 		rightShieldPosX = mc.getMainWindow().getScaledWidth() / 2 + RightShieldPosX;
+		if (rightShieldPosX < 0) {
+			rightShieldPosX = 0;
+		}
+		if (rightShieldPosX > mc.getMainWindow().getScaledWidth() - 32) {
+			rightShieldPosX = mc.getMainWindow().getScaledWidth() - 32;
+		}
 	}
 
-	public static void updateRightSHieldPosY() {
+	public static void updateRightShieldPosY() {
 		rightShieldPosY = mc.getMainWindow().getScaledHeight() + RightShieldPosY;
+		if (rightShieldPosY < 0) {
+			rightShieldPosY = 0;
+		}
+		if (rightShieldPosY > mc.getMainWindow().getScaledHeight() - 32) {
+			rightShieldPosY = mc.getMainWindow().getScaledHeight() - 32;
+		}
 	}
 
 	/***********************************
@@ -1762,10 +1928,22 @@ public class BetterOverlay {
 
 	public static void updateFirePosX() {
 		firePosX = mc.getMainWindow().getScaledWidth() / 2 + FirePosX;
+		if (firePosX < 0) {
+			firePosX = 0;
+		}
+		if (firePosX > mc.getMainWindow().getScaledWidth() - 200) {
+			firePosX = mc.getMainWindow().getScaledWidth() - 200;
+		}
 	}
 
 	public static void updateFirePosY() {
 		firePosY = mc.getMainWindow().getScaledHeight() + FirePosY;
+		if (firePosY < 0) {
+			firePosY = 0;
+		}
+		if (firePosY > mc.getMainWindow().getScaledHeight() - 32) {
+			firePosY = mc.getMainWindow().getScaledHeight() - 32;
+		}
 	}
 
 	/***********************************
@@ -1776,10 +1954,22 @@ public class BetterOverlay {
 
 	public static void updateFoodPosX() {
 		foodPosX = mc.getMainWindow().getScaledWidth() / 2 + FoodBarPosX;
+		if (foodPosX < 90) {
+			foodPosX = 90;
+		}
+		if (foodPosX > mc.getMainWindow().getScaledWidth()) {
+			foodPosX = mc.getMainWindow().getScaledWidth();
+		}
 	}
 
 	public static void updateFoodPosY() {
 		foodPosY = mc.getMainWindow().getScaledHeight() + FoodBarPosY;
+		if (foodPosY < 0) {
+			foodPosY = 0;
+		}
+		if (foodPosY > mc.getMainWindow().getScaledHeight() - 10) {
+			foodPosY = mc.getMainWindow().getScaledHeight() - 10;
+		}
 	}
 
 	/***********************************
@@ -1790,10 +1980,22 @@ public class BetterOverlay {
 
 	public static void updateAirPosX() {
 		airPosX = mc.getMainWindow().getScaledWidth() / 2 + AirBarPosX;
+		if (airPosX < 0) {
+			airPosX = 0;
+		}
+		if (airPosX > mc.getMainWindow().getScaledWidth() - 182) {
+			airPosX = mc.getMainWindow().getScaledWidth() - 182;
+		}
 	}
 
 	public static void updateAirPosY() {
 		airPosY = mc.getMainWindow().getScaledHeight() + AirBarPosY;
+		if (airPosY < 0) {
+			airPosY = 0;
+		}
+		if (airPosY > mc.getMainWindow().getScaledHeight() - 16) {
+			airPosY = mc.getMainWindow().getScaledHeight() - 16;
+		}
 	}
 
 	/***********************************
@@ -1804,10 +2006,22 @@ public class BetterOverlay {
 
 	public static void updateExpPosX() {
 		expPosX = mc.getMainWindow().getScaledWidth() / 2 + ExpBarPosX;
+		if (expPosX < 0) {
+			expPosX = 0;
+		}
+		if (expPosX > mc.getMainWindow().getScaledWidth() - 182) {
+			expPosX = mc.getMainWindow().getScaledWidth() - 182;
+		}
 	}
 
 	public static void updateExpPosY() {
 		expPosY = mc.getMainWindow().getScaledHeight() + ExpBarPosY;
+		if (expPosY < 0) {
+			expPosY = 0;
+		}
+		if (expPosY > mc.getMainWindow().getScaledHeight() - 16) {
+			expPosY = mc.getMainWindow().getScaledHeight() - 16;
+		}
 	}
 
 	/***********************************
@@ -1818,10 +2032,215 @@ public class BetterOverlay {
 
 	public static void updateBossPosX() {
 		bossPosX = mc.getMainWindow().getScaledWidth() / 2 + BossBarPosX;
+		if (bossPosX < 0) {
+			bossPosX = 0;
+		}
+		if (bossPosX > mc.getMainWindow().getScaledWidth() - 320) {
+			bossPosX = mc.getMainWindow().getScaledWidth() - 320;
+		}
 	}
 
 	public static void updateBossPosY() {
 		bossPosY = BossBarPosY;
+		if (bossPosY < 0) {
+			bossPosY = 0;
+		}
+		if (bossPosY > mc.getMainWindow().getScaledHeight() - (int) (40 * 0.8F)) {
+			bossPosY = mc.getMainWindow().getScaledHeight() - (int) (40 * 0.8F);
+		}
+	}
+
+	/***********************************
+	 * 
+	 * Update Effects
+	 * 
+	 ***********************************/
+
+	public static void updateEffectsPosX() {
+		effectsPosX = mc.getMainWindow().getScaledWidth() + EffectsPosX;
+		if (effectsPosX < -25) {
+			effectsPosX = -25;
+		}
+		if (effectsPosX > mc.getMainWindow().getScaledWidth()) {
+			effectsPosX = mc.getMainWindow().getScaledWidth();
+		}
+	}
+
+	public static void updateEffectsPosY() {
+		effectsPosY = EffectsPosY;
+		if (effectsPosY < 0) {
+			effectsPosY = 0;
+		}
+		if (effectsPosY > mc.getMainWindow().getScaledHeight() - 51) {
+			effectsPosY = mc.getMainWindow().getScaledHeight() - 51;
+		}
+	}
+
+	@SuppressWarnings({ "deprecation", "unused" })
+	public static void renderLeftShieldText(List<String> p_renderTooltip_1_, int p_renderTooltip_2_, int p_renderTooltip_3_, FontRenderer font) {
+		if (!p_renderTooltip_1_.isEmpty()) {
+			RenderSystem.disableRescaleNormal();
+			RenderSystem.disableDepthTest();
+			int i = 0;
+
+			for (String s : p_renderTooltip_1_) {
+				int j = 36;
+				if (j > i) {
+					i = j;
+				}
+			}
+
+			int l1 = p_renderTooltip_2_ + 12;
+			int i2 = p_renderTooltip_3_ - 12;
+			int k = 9;
+			if (p_renderTooltip_1_.size() > 1) {
+				k += 2 + (p_renderTooltip_1_.size() - 1) * 10;
+			}
+
+			int width = mc.getMainWindow().getScaledWidth();
+			int height = mc.getMainWindow().getScaledHeight();
+
+			if (l1 + i > width) {
+				l1 -= 28 + i;
+			}
+
+			if (i2 + k + 6 > height) {
+				i2 = height - k - 6;
+			}
+
+			MatrixStack stack = new MatrixStack();
+			int l = -267386864;
+			fillGradient(l1 - 3, i2 - 4, l1 + i + 3, i2 - 3, -267386864, -267386864);
+			fillGradient(l1 - 3, i2 + k + 3, l1 + i + 3, i2 + k + 4, -267386864, -267386864);
+			fillGradient(l1 - 3, i2 - 3, l1 + i + 3, i2 + k + 3, -267386864, -267386864);
+			fillGradient(l1 - 4, i2 - 3, l1 - 3, i2 + k + 3, -267386864, -267386864);
+			fillGradient(l1 + i + 3, i2 - 3, l1 + i + 4, i2 + k + 3, -267386864, -267386864);
+			int i1 = 1347420415;
+			int j1 = 1344798847;
+			fillGradient(l1 - 3, i2 - 3 + 1, l1 - 3 + 1, i2 + k + 3 - 1, 1347420415, 1344798847);
+			fillGradient(l1 + i + 2, i2 - 3 + 1, l1 + i + 3, i2 + k + 3 - 1, 1347420415, 1344798847);
+			fillGradient(l1 - 3, i2 - 3, l1 + i + 3, i2 - 3 + 1, 1347420415, 1347420415);
+			fillGradient(l1 - 3, i2 + k + 2, l1 + i + 3, i2 + k + 3, 1344798847, 1344798847);
+			MatrixStack matrixstack = new MatrixStack();
+			IRenderTypeBuffer.Impl irendertypebuffer$impl = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
+			matrixstack.translate(0.0D, 0.0D, (double) -90);
+			Matrix4f matrix4f = matrixstack.getLast().getMatrix();
+
+			for (int k1 = 0; k1 < p_renderTooltip_1_.size(); ++k1) {
+				String s1 = p_renderTooltip_1_.get(k1);
+				if (s1 != null) {
+					font.renderString(s1, (float) l1, (float) i2 + 0.5F, -1, true, matrix4f, irendertypebuffer$impl, false, 0, 15728880);
+				}
+
+				if (k1 == 0) {
+					i2 += 2;
+				}
+
+				i2 += 10;
+			}
+
+			irendertypebuffer$impl.finish();
+			RenderSystem.enableDepthTest();
+			RenderSystem.enableRescaleNormal();
+		}
+	}
+
+	@SuppressWarnings({ "deprecation", "unused" })
+	public static void renderRightShieldText(List<String> p_renderTooltip_1_, int p_renderTooltip_2_, int p_renderTooltip_3_, FontRenderer font) {
+		if (!p_renderTooltip_1_.isEmpty()) {
+			RenderSystem.disableRescaleNormal();
+			RenderSystem.disableDepthTest();
+			int i = 0;
+
+			for (String s : p_renderTooltip_1_) {
+				int j = 36;
+				if (j > i) {
+					i = j;
+				}
+			}
+
+			int l1 = p_renderTooltip_2_ + 12;
+			int i2 = p_renderTooltip_3_ - 12;
+			int k = 9;
+			if (p_renderTooltip_1_.size() > 1) {
+				k += 2 + (p_renderTooltip_1_.size() - 1) * 10;
+			}
+
+			int width = mc.getMainWindow().getScaledWidth();
+			int height = mc.getMainWindow().getScaledHeight();
+
+			if (l1 + i > width) {
+				l1 -= 28 + i;
+			}
+
+			if (i2 + k + 6 > height) {
+				i2 = height - k - 6;
+			}
+
+			MatrixStack stack = new MatrixStack();
+			int l = -267386864;
+			fillGradient(l1 - 3, i2 - 4, l1 + i + 3, i2 - 3, -267386864, -267386864);
+			fillGradient(l1 - 3, i2 + k + 3, l1 + i + 3, i2 + k + 4, -267386864, -267386864);
+			fillGradient(l1 - 3, i2 - 3, l1 + i + 3, i2 + k + 3, -267386864, -267386864);
+			fillGradient(l1 - 4, i2 - 3, l1 - 3, i2 + k + 3, -267386864, -267386864);
+			fillGradient(l1 + i + 3, i2 - 3, l1 + i + 4, i2 + k + 3, -267386864, -267386864);
+			int i1 = 1347420415;
+			int j1 = 1344798847;
+			fillGradient(l1 - 3, i2 - 3 + 1, l1 - 3 + 1, i2 + k + 3 - 1, 1347420415, 1344798847);
+			fillGradient(l1 + i + 2, i2 - 3 + 1, l1 + i + 3, i2 + k + 3 - 1, 1347420415, 1344798847);
+			fillGradient(l1 - 3, i2 - 3, l1 + i + 3, i2 - 3 + 1, 1347420415, 1347420415);
+			fillGradient(l1 - 3, i2 + k + 2, l1 + i + 3, i2 + k + 3, 1344798847, 1344798847);
+			MatrixStack matrixstack = new MatrixStack();
+			IRenderTypeBuffer.Impl irendertypebuffer$impl = IRenderTypeBuffer.getImpl(Tessellator.getInstance().getBuffer());
+			matrixstack.translate(0.0D, 0.0D, (double) -90);
+			Matrix4f matrix4f = matrixstack.getLast().getMatrix();
+
+			for (int k1 = 0; k1 < p_renderTooltip_1_.size(); ++k1) {
+				String s1 = p_renderTooltip_1_.get(k1);
+				if (s1 != null) {
+					font.renderString(s1, (float) l1 + 11, (float) i2 + 0.5F, -1, true, matrix4f, irendertypebuffer$impl, false, 0, 15728880);
+				}
+
+				if (k1 == 0) {
+					i2 += 2;
+				}
+
+				i2 += 10;
+			}
+
+			irendertypebuffer$impl.finish();
+			RenderSystem.enableDepthTest();
+			RenderSystem.enableRescaleNormal();
+		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	public static void fillGradient(int p_fillGradient_1_, int p_fillGradient_2_, int p_fillGradient_3_, int p_fillGradient_4_, int p_fillGradient_5_, int p_fillGradient_6_) {
+		float f = (float) (p_fillGradient_5_ >> 24 & 255) / 255.0F;
+		float f1 = (float) (p_fillGradient_5_ >> 16 & 255) / 255.0F;
+		float f2 = (float) (p_fillGradient_5_ >> 8 & 255) / 255.0F;
+		float f3 = (float) (p_fillGradient_5_ & 255) / 255.0F;
+		float f4 = (float) (p_fillGradient_6_ >> 24 & 255) / 255.0F;
+		float f5 = (float) (p_fillGradient_6_ >> 16 & 255) / 255.0F;
+		float f6 = (float) (p_fillGradient_6_ >> 8 & 255) / 255.0F;
+		float f7 = (float) (p_fillGradient_6_ & 255) / 255.0F;
+		RenderSystem.disableTexture();
+		RenderSystem.enableBlend();
+		RenderSystem.disableAlphaTest();
+		RenderSystem.defaultBlendFunc();
+		RenderSystem.shadeModel(7425);
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder bufferbuilder = tessellator.getBuffer();
+		bufferbuilder.begin(7, DefaultVertexFormats.POSITION_COLOR);
+		bufferbuilder.pos((double) p_fillGradient_3_, (double) p_fillGradient_2_, (double) -90).color(f1, f2, f3, f).endVertex();
+		bufferbuilder.pos((double) p_fillGradient_1_, (double) p_fillGradient_2_, (double) -90).color(f1, f2, f3, f).endVertex();
+		bufferbuilder.pos((double) p_fillGradient_1_, (double) p_fillGradient_4_, (double) -90).color(f5, f6, f7, f4).endVertex();
+		bufferbuilder.pos((double) p_fillGradient_3_, (double) p_fillGradient_4_, (double) -90).color(f5, f6, f7, f4).endVertex();
+		tessellator.draw();
+		RenderSystem.shadeModel(7424);
+		RenderSystem.disableBlend();
+		RenderSystem.enableAlphaTest();
+		RenderSystem.enableTexture();
 	}
 
 }

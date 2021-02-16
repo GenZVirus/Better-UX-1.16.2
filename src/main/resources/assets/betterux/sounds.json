@@ -8,5 +8,15 @@
 			"stream": true  
 		}
 		]
+	},
+	"heartbeat2": {
+		"category": "ambient",
+		"subtitle": "heartbeat2",
+		"sounds":[
+		{
+			"name": "betterux:effects/heartbeat2",
+			"stream": true  
+		}
+		]
 	}
 }

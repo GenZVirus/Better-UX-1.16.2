@@ -29,6 +29,7 @@ public class ChangeTextures extends Screen{
 			GenZVirus.active = false;
 			XMLFileJava.checkFileAndMake();
 			XMLFileJava.editElement("Texture", "genzvirus");
+			XMLFileJava.editElement("HasOverlay", "false");
 			XMLFileJava.load();
 		});
 		
@@ -37,6 +38,7 @@ public class ChangeTextures extends Screen{
 			Zetta.active = false;
 			XMLFileJava.checkFileAndMake();
 			XMLFileJava.editElement("Texture", "zetta");
+			XMLFileJava.editElement("HasOverlay", "false");
 			XMLFileJava.load();
 		});
 		Squared = new Button(mc.getMainWindow().getScaledWidth() / 2 + 5, mc.getMainWindow().getScaledHeight() / 2 + 25, 100, 20, new TranslationTextComponent("Squared"), (x) -> {
