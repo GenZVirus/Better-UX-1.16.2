@@ -31,6 +31,11 @@ public class BetterUXResources {
 	// Vampirism
 	public static String BLOOD_BAR_FILL = "blood_bar_fill.png";
 	public static String BLOOD_BAR_OVERLAY = "blood_bar_overlay.png";
+	
+	// Survive
+	public static String THERMOMETER_BOTTLE = "thermometer_bottle.png";
+	public static String THERMOMETER_FILL = "thermometer_fill.png";
+	public static String HYDRATION_FILL = "hydration_bar_fill.png";
 
 	// Discord
 	public static String DISCORD = "discord.png";

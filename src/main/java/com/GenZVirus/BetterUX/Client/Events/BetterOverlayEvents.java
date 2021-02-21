@@ -11,6 +11,7 @@ import com.GenZVirus.BetterUX.Client.GUI.BetterUXResources;
 import com.GenZVirus.BetterUX.Client.GUI.EditOverlay;
 import com.GenZVirus.BetterUX.Client.GUI.SelectedOverlay;
 import com.GenZVirus.BetterUX.Client.GUI.Settings;
+import com.GenZVirus.BetterUX.ModCompatibility.SurviveComp;
 import com.GenZVirus.BetterUX.Util.KeyboardHelper;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -71,31 +72,41 @@ public class BetterOverlayEvents {
 		if (mc.world == null) { return; }
 
 		assert mc.player != null;
-		if(!BetterOverlay.soundEffects) return;
-		if(mc.player.getHealth() > mc.player.getMaxHealth() / 2) return;
-			PlayerEntity player = mc.player;
-			BlockPos pos = player.getPosition();
-			if (heartbeat == null) {
-				if(mc.player.getHealth() > mc.player.getMaxHealth() / 4)
+		if (!BetterOverlay.soundEffects)
+			return;
+		if (mc.player.getHealth() > mc.player.getMaxHealth() / 2)
+			return;
+		PlayerEntity player = mc.player;
+		BlockPos pos = player.getPosition();
+		if (heartbeat == null) {
+			if (mc.player.getHealth() > mc.player.getMaxHealth() / 4)
 				heartbeat = new SimpleSound(new SoundEvent(new ResourceLocation(BetterUX.MOD_ID, "heartbeat")), SoundCategory.MASTER, 1.0f, 1.0f, pos);
-				else heartbeat = new SimpleSound(new SoundEvent(new ResourceLocation(BetterUX.MOD_ID, "heartbeat2")), SoundCategory.MASTER, 1.0f, 1.0f, pos);
-			} else {
-				BlockPos currentPos = new BlockPos(heartbeat.getX(), heartbeat.getY(), heartbeat.getZ());
-				if (mc.getSoundHandler().isPlaying(heartbeat))
-					return;
-				if (!currentPos.equals(pos)) {
-					if(mc.player.getHealth() > mc.player.getMaxHealth() / 4)
-						heartbeat = new SimpleSound(new SoundEvent(new ResourceLocation(BetterUX.MOD_ID, "heartbeat")), SoundCategory.MASTER, 1.0f, 1.0f, pos);
-						else heartbeat = new SimpleSound(new SoundEvent(new ResourceLocation(BetterUX.MOD_ID, "heartbeat2")), SoundCategory.MASTER, 1.0f, 1.0f, pos);
-				}
+			else
+				heartbeat = new SimpleSound(new SoundEvent(new ResourceLocation(BetterUX.MOD_ID, "heartbeat2")), SoundCategory.MASTER, 1.0f, 1.0f, pos);
+		} else {
+			BlockPos currentPos = new BlockPos(heartbeat.getX(), heartbeat.getY(), heartbeat.getZ());
+			if (mc.getSoundHandler().isPlaying(heartbeat))
+				return;
+			if (!currentPos.equals(pos)) {
+				if (mc.player.getHealth() > mc.player.getMaxHealth() / 4)
+					heartbeat = new SimpleSound(new SoundEvent(new ResourceLocation(BetterUX.MOD_ID, "heartbeat")), SoundCategory.MASTER, 1.0f, 1.0f, pos);
+				else
+					heartbeat = new SimpleSound(new SoundEvent(new ResourceLocation(BetterUX.MOD_ID, "heartbeat2")), SoundCategory.MASTER, 1.0f, 1.0f, pos);
 			}
-			mc.getSoundHandler().play(heartbeat);
+		}
+		mc.getSoundHandler().play(heartbeat);
 	}
-	
+
 	@SubscribeEvent(receiveCanceled = true)
 	public static void Overlay(RenderGameOverlayEvent.Pre event) {
 		if (BetterOverlay.Enabled_Disabled.contentEquals("disabled"))
 			return;
+		if (BetterOverlay.isSurviveLoaded) {
+			BetterOverlay.SurviveOffsetY = -12;
+		} else {
+			BetterOverlay.SurviveOffsetY = 0;
+		}
+
 		if (event.getType() == RenderGameOverlayEvent.ElementType.HEALTH) {
 			event.setCanceled(true);
 			BetterOverlay.renderHealth();
@@ -103,6 +114,9 @@ public class BetterOverlayEvents {
 		if (event.getType() == RenderGameOverlayEvent.ElementType.FOOD) {
 			event.setCanceled(true);
 			BetterOverlay.renderFood();
+			if (BetterOverlay.isSurviveLoaded) {
+				SurviveComp.surviveOverlay();
+			}
 		}
 		if (event.getType() == RenderGameOverlayEvent.ElementType.ARMOR) {
 			event.setCanceled(true);
@@ -126,7 +140,7 @@ public class BetterOverlayEvents {
 			event.setCanceled(true);
 			checkForBosses = 100;
 		}
-		if(event.getType() == RenderGameOverlayEvent.ElementType.POTION_ICONS) {
+		if (event.getType() == RenderGameOverlayEvent.ElementType.POTION_ICONS) {
 			event.setCanceled(true);
 			BetterOverlay.renderPotionEffects();
 		}
@@ -148,7 +162,8 @@ public class BetterOverlayEvents {
 
 	@SubscribeEvent
 	public static void checkForClosestBoss(RenderGameOverlayEvent.Pre event) {
-		if(event.getType() != RenderGameOverlayEvent.ElementType.CHAT) return;
+		if (event.getType() != RenderGameOverlayEvent.ElementType.CHAT)
+			return;
 		if (checkForBosses <= 0)
 			return;
 		PlayerEntity player = mc.player;
@@ -191,8 +206,8 @@ public class BetterOverlayEvents {
 			mainWindowWidth = mc.getMainWindow().getScaledWidth();
 			mainWindowHeight = mc.getMainWindow().getScaledHeight();
 			BetterOverlay.updatePositions();
-			if(mc.currentScreen != null)
-			mc.currentScreen.init(mc, mc.getMainWindow().getScaledWidth(), mc.getMainWindow().getScaledHeight());
+			if (mc.currentScreen != null)
+				mc.currentScreen.init(mc, mc.getMainWindow().getScaledWidth(), mc.getMainWindow().getScaledHeight());
 		}
 	}
 

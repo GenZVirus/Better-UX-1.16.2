@@ -56,6 +56,9 @@ public class BetterUX {
 		if (ModList.get().isLoaded("vampirism")) {
 			BetterOverlay.isVampirismLoaded = true;
 		}
+		if (ModList.get().isLoaded("survive")) {
+			BetterOverlay.isSurviveLoaded = true;
+		}
 	}
 
 	@SubscribeEvent

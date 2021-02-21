@@ -74,7 +74,7 @@ public class VampirismComp {
 			 * 
 			 ***********************************/
 
-			AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 89 + 88 - BetterOverlay.foodPercentage, BetterOverlay.foodPosY + 1, 0, 88 - BetterOverlay.foodPercentage, 0, BetterOverlay.foodPercentage, 8, 8, 88);
+			AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 89 + 88 - BetterOverlay.foodPercentage, BetterOverlay.foodPosY + 1 + BetterOverlay.SurviveOffsetY, 0, 88 - BetterOverlay.foodPercentage, 0, BetterOverlay.foodPercentage, 8, 8, 88);
 
 			/***********************************
 			 * 
@@ -111,7 +111,7 @@ public class VampirismComp {
 			 * 
 			 ***********************************/
 
-			AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 89 + 88 - BetterOverlay.saturationPercentage, BetterOverlay.foodPosY + 1, 0, 88 - BetterOverlay.saturationPercentage, 0, BetterOverlay.saturationPercentage, 8, 8, 88);
+			AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 89 + 88 - BetterOverlay.saturationPercentage, BetterOverlay.foodPosY + 1 + BetterOverlay.SurviveOffsetY, 0, 88 - BetterOverlay.saturationPercentage, 0, BetterOverlay.saturationPercentage, 8, 8, 88);
 
 			/***********************************
 			 * 
@@ -228,7 +228,7 @@ public class VampirismComp {
 				 * 
 				 ***********************************/
 
-				AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 89 + 88 - BetterOverlay.addedFoodPercentage, BetterOverlay.foodPosY + 1, 0, 88 - BetterOverlay.addedFoodPercentage, 0, BetterOverlay.addedFoodPercentage, 8, 8, 88);
+				AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 89 + 88 - BetterOverlay.addedFoodPercentage, BetterOverlay.foodPosY + 1 + BetterOverlay.SurviveOffsetY, 0, 88 - BetterOverlay.addedFoodPercentage, 0, BetterOverlay.addedFoodPercentage, 8, 8, 88);
 
 				/***********************************
 				 * 
@@ -265,7 +265,7 @@ public class VampirismComp {
 				 * 
 				 ***********************************/
 
-				AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 89 + 88 - BetterOverlay.addedSaturationPercentage, BetterOverlay.foodPosY + 1, 0, 88 - BetterOverlay.addedSaturationPercentage, 0, BetterOverlay.addedSaturationPercentage, 8, 8, 88);
+				AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 89 + 88 - BetterOverlay.addedSaturationPercentage, BetterOverlay.foodPosY + 1 + BetterOverlay.SurviveOffsetY, 0, 88 - BetterOverlay.addedSaturationPercentage, 0, BetterOverlay.addedSaturationPercentage, 8, 8, 88);
 
 				/***********************************
 				 * 
@@ -291,7 +291,7 @@ public class VampirismComp {
 
 				if (BetterOverlay.HasOverlay) {
 					mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.FOOD_BAR_OVERLAY));
-					AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 90, BetterOverlay.foodPosY, 0, 0, 0, 90, 10, 10, 90);
+					AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 90, BetterOverlay.foodPosY + BetterOverlay.SurviveOffsetY, 0, 0, 0, 90, 10, 10, 90);
 				}
 
 				/***********************************
@@ -338,7 +338,7 @@ public class VampirismComp {
 					 * 
 					 ***********************************/
 
-					mc.fontRenderer.drawString(new MatrixStack(), BetterOverlay.foodFinal, BetterOverlay.foodPosX - 45 - stringWidth / 2, BetterOverlay.foodPosY + 1, 0xFFFFFFFF);
+					mc.fontRenderer.drawString(new MatrixStack(), BetterOverlay.foodFinal, BetterOverlay.foodPosX - 45 - stringWidth / 2, BetterOverlay.foodPosY + 1 + BetterOverlay.SurviveOffsetY, 0xFFFFFFFF);
 				}
 			} else {
 
@@ -391,7 +391,7 @@ public class VampirismComp {
 
 				if (BetterOverlay.HasOverlay) {
 					mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.FOOD_BAR_OVERLAY));
-					AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 90, BetterOverlay.foodPosY, 0, 0, 0, 90, 10, 10, 90);
+					AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 90, BetterOverlay.foodPosY + BetterOverlay.SurviveOffsetY, 0, 0, 0, 90, 10, 10, 90);
 				}
 
 				if (!BetterOverlay.textDisabled) {
@@ -410,7 +410,7 @@ public class VampirismComp {
 					 * 
 					 ***********************************/
 
-					mc.fontRenderer.drawString(new MatrixStack(), BetterOverlay.foodFinal, BetterOverlay.foodPosX - 45 - stringWidth / 2, BetterOverlay.foodPosY + 1, 0xFFFFFFFF);
+					mc.fontRenderer.drawString(new MatrixStack(), BetterOverlay.foodFinal, BetterOverlay.foodPosX - 45 - stringWidth / 2, BetterOverlay.foodPosY + 1 + BetterOverlay.SurviveOffsetY, 0xFFFFFFFF);
 				}
 			}
 			RenderSystem.disableBlend();
@@ -423,7 +423,7 @@ public class VampirismComp {
 			if (percentage > 88)
 				percentage = 88;
 			mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.BLOOD_BAR_FILL));
-			AbstractGui.blit(new MatrixStack(), posX - 89 + 88 - percentage, posY + 1, 0, 88 - percentage, 0, percentage, 8, 8, 88);
+			AbstractGui.blit(new MatrixStack(), posX - 89 + 88 - percentage, posY + 1 + BetterOverlay.SurviveOffsetY, 0, 88 - percentage, 0, percentage, 8, 8, 88);
 
 			/***********************************
 			 * 
@@ -433,19 +433,19 @@ public class VampirismComp {
 
 			if (BetterOverlay.HasOverlay) {
 				mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.BLOOD_BAR_OVERLAY));
-				AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 90, BetterOverlay.foodPosY, 0, 0, 0, 90, 10, 10, 90);
+				AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 90, BetterOverlay.foodPosY + BetterOverlay.SurviveOffsetY, 0, 0, 0, 90, 10, 10, 90);
 			}
 			if (!BetterOverlay.textDisabled) {
 				if (playerBloodLevel != level) {
 					bloodLevel = level + " / " + maxLevel + " | " + "\u00A7dLv " + ((IVampirePlayer) VampirismAPI.getFactionPlayerHandler((mc.player)).map(h -> h.getCurrentFactionPlayer().get()).orElse(null)).getLevel();
 				}
 				int stringWidth = mc.fontRenderer.getStringWidth(bloodLevel);
-				mc.fontRenderer.drawString(new MatrixStack(), bloodLevel, posX - 45 - stringWidth / 2, posY + 1, 0xFFFFFFFF);
+				mc.fontRenderer.drawString(new MatrixStack(), bloodLevel, posX - 45 - stringWidth / 2, posY + 1 + BetterOverlay.SurviveOffsetY, 0xFFFFFFFF);
 			} else {
 				if (playerBloodLevel != level) {
 					bloodLevel = "\u00A7dLv " + ((IVampirePlayer) VampirismAPI.getFactionPlayerHandler((mc.player)).map(h -> h.getCurrentFactionPlayer().get()).orElse(null)).getLevel();
 				}
-				mc.fontRenderer.drawString(new MatrixStack(), bloodLevel, posX + 5, posY + 1, 0xFFFFFFFF);
+				mc.fontRenderer.drawString(new MatrixStack(), bloodLevel, posX + 5, posY + 1 + BetterOverlay.SurviveOffsetY, 0xFFFFFFFF);
 			}
 			RenderSystem.disableBlend();
 			mc.getProfiler().endSection();

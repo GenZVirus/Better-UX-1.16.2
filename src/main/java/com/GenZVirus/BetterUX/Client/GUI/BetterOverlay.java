@@ -71,6 +71,16 @@ public class BetterOverlay {
 	public static boolean soundEffects = true;
 	public static String Special;
 
+	// Survive positions offset
+
+	public static int TempPosX = 0;
+	public static int TempPosY = 0;
+	public static int EnergyPosX = 0;
+	public static int EnergyPosY = 0;
+	public static int HydrationPosX = 0;
+	public static int HydrationPosY = 0;
+	public static int SurviveOffsetY = 0;
+
 	/***********************************
 	 * 
 	 * Setting the left shield position
@@ -152,6 +162,15 @@ public class BetterOverlay {
 	public static int effectsPosX = mc.getMainWindow().getScaledWidth() + EffectsPosX;
 	public static int effectsPosY = EffectsPosY;
 
+	// Survive positions
+
+	public static int tempPosX = mc.getMainWindow().getScaledWidth() / 2 + TempPosX;
+	public static int tempPosY = mc.getMainWindow().getScaledHeight() + TempPosY;
+	public static int energyPosX = mc.getMainWindow().getScaledWidth() / 2 + EnergyPosX;
+	public static int energyPosY = mc.getMainWindow().getScaledHeight() + EnergyPosY;
+	public static int hydrationPosX = mc.getMainWindow().getScaledWidth() / 2 + HydrationPosX;
+	public static int hydrationPosY = mc.getMainWindow().getScaledHeight() + HydrationPosY;
+
 	/***********************************
 	 * 
 	 * Global player current health variables
@@ -215,6 +234,14 @@ public class BetterOverlay {
 	 ***********************************/
 
 	public static boolean isVampirismLoaded = false;
+
+	/***********************************
+	 * 
+	 * Global added to check if Survive is loaded
+	 * 
+	 ***********************************/
+
+	public static boolean isSurviveLoaded = false;
 
 	/***********************************
 	 * 
@@ -328,7 +355,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.blit(new MatrixStack(), HealthPosX, HealthPosY, 0, 0, 0, 90, 10, 10, 90);
+		AbstractGui.blit(new MatrixStack(), HealthPosX, HealthPosY + BetterOverlay.SurviveOffsetY, 0, 0, 0, 90, 10, 10, 90);
 
 		/***********************************
 		 * 
@@ -380,7 +407,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.blit(new MatrixStack(), HealthPosX + 1, HealthPosY + 1, 0, 0, 0, healthPercentage, 8, 8, 88);
+		AbstractGui.blit(new MatrixStack(), HealthPosX + 1, HealthPosY + 1 + BetterOverlay.SurviveOffsetY, 0, 0, 0, healthPercentage, 8, 8, 88);
 
 		/***********************************
 		 * 
@@ -392,7 +419,7 @@ public class BetterOverlay {
 
 		if (mc.player.getAbsorptionAmount() > 0) {
 			mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.SHIELD_BAR));
-			AbstractGui.blit(new MatrixStack(), HealthPosX, HealthPosY, 0, 0, 0, 90, 10, 10, 90);
+			AbstractGui.blit(new MatrixStack(), HealthPosX, HealthPosY + BetterOverlay.SurviveOffsetY, 0, 0, 0, 90, 10, 10, 90);
 		}
 
 		/***********************************
@@ -403,7 +430,7 @@ public class BetterOverlay {
 
 		if (HasOverlay) {
 			mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.HEALTH_BAR_OVERLAY));
-			AbstractGui.blit(new MatrixStack(), HealthPosX, HealthPosY, 0, 0, 0, 90, 10, 10, 90);
+			AbstractGui.blit(new MatrixStack(), HealthPosX, HealthPosY + BetterOverlay.SurviveOffsetY, 0, 0, 0, 90, 10, 10, 90);
 		}
 
 		/***********************************
@@ -428,7 +455,7 @@ public class BetterOverlay {
 			 * 
 			 ***********************************/
 
-			AbstractGui.blit(new MatrixStack(), firePosX, firePosY, 0, 0, fire_offset * 32, 200, 32, 5792, 200);
+			AbstractGui.blit(new MatrixStack(), firePosX, firePosY + BetterOverlay.SurviveOffsetY, 0, 0, fire_offset * 32, 200, 32, 5792, 200);
 		}
 
 		/***********************************
@@ -504,7 +531,7 @@ public class BetterOverlay {
 			 * 
 			 ***********************************/
 
-			mc.fontRenderer.drawString(new MatrixStack(), playerHealthText, HealthPosX + 45 - stringWidth / 2, HealthPosY + 1, 0xFFFFFFFF);
+			mc.fontRenderer.drawString(new MatrixStack(), playerHealthText, HealthPosX + 45 - stringWidth / 2, HealthPosY + 1 + BetterOverlay.SurviveOffsetY, 0xFFFFFFFF);
 		}
 
 		/***********************************
@@ -571,7 +598,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.blit(new MatrixStack(), foodPosX - 90, foodPosY, 0, 0, 0, 90, 10, 10, 90);
+		AbstractGui.blit(new MatrixStack(), foodPosX - 90, foodPosY + BetterOverlay.SurviveOffsetY, 0, 0, 0, 90, 10, 10, 90);
 
 		if (isVampirismLoaded) {
 			VampirismComp.bloodOverlay();
@@ -619,7 +646,7 @@ public class BetterOverlay {
 			 * 
 			 ***********************************/
 
-			AbstractGui.blit(new MatrixStack(), foodPosX - 89 + 88 - foodPercentage, foodPosY + 1, 0, 88 - foodPercentage, 0, foodPercentage, 8, 8, 88);
+			AbstractGui.blit(new MatrixStack(), foodPosX - 89 + 88 - foodPercentage, foodPosY + 1 + BetterOverlay.SurviveOffsetY, 0, 88 - foodPercentage, 0, foodPercentage, 8, 8, 88);
 
 			/***********************************
 			 * 
@@ -656,7 +683,7 @@ public class BetterOverlay {
 			 * 
 			 ***********************************/
 
-			AbstractGui.blit(new MatrixStack(), foodPosX - 89 + 88 - saturationPercentage, foodPosY + 1, 0, 88 - saturationPercentage, 0, saturationPercentage, 8, 8, 88);
+			AbstractGui.blit(new MatrixStack(), foodPosX - 89 + 88 - saturationPercentage, foodPosY + 1 + BetterOverlay.SurviveOffsetY, 0, 88 - saturationPercentage, 0, saturationPercentage, 8, 8, 88);
 
 			/***********************************
 			 * 
@@ -773,7 +800,7 @@ public class BetterOverlay {
 				 * 
 				 ***********************************/
 
-				AbstractGui.blit(new MatrixStack(), foodPosX - 89 + 88 - addedFoodPercentage, foodPosY + 1, 0, 88 - addedFoodPercentage, 0, addedFoodPercentage, 8, 8, 88);
+				AbstractGui.blit(new MatrixStack(), foodPosX - 89 + 88 - addedFoodPercentage, foodPosY + 1 + BetterOverlay.SurviveOffsetY, 0, 88 - addedFoodPercentage, 0, addedFoodPercentage, 8, 8, 88);
 
 				/***********************************
 				 * 
@@ -810,7 +837,7 @@ public class BetterOverlay {
 				 * 
 				 ***********************************/
 
-				AbstractGui.blit(new MatrixStack(), foodPosX - 89 + 88 - addedSaturationPercentage, foodPosY + 1, 0, 88 - addedSaturationPercentage, 0, addedSaturationPercentage, 8, 8, 88);
+				AbstractGui.blit(new MatrixStack(), foodPosX - 89 + 88 - addedSaturationPercentage, foodPosY + 1 + BetterOverlay.SurviveOffsetY, 0, 88 - addedSaturationPercentage, 0, addedSaturationPercentage, 8, 8, 88);
 
 				/***********************************
 				 * 
@@ -856,7 +883,7 @@ public class BetterOverlay {
 
 				if (BetterOverlay.HasOverlay) {
 					mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.FOOD_BAR_OVERLAY));
-					AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 90, BetterOverlay.foodPosY, 0, 0, 0, 90, 10, 10, 90);
+					AbstractGui.blit(new MatrixStack(), BetterOverlay.foodPosX - 90, BetterOverlay.foodPosY + BetterOverlay.SurviveOffsetY, 0, 0, 0, 90, 10, 10, 90);
 				}
 
 				if (!textDisabled) {
@@ -883,7 +910,7 @@ public class BetterOverlay {
 					 * 
 					 ***********************************/
 
-					mc.fontRenderer.drawString(new MatrixStack(), foodFinal, foodPosX - 45 - stringWidth / 2, foodPosY + 1, 0xFFFFFFFF);
+					mc.fontRenderer.drawString(new MatrixStack(), foodFinal, foodPosX - 45 - stringWidth / 2, foodPosY + 1 + BetterOverlay.SurviveOffsetY, 0xFFFFFFFF);
 				}
 			} else {
 
@@ -936,7 +963,7 @@ public class BetterOverlay {
 
 				if (BetterOverlay.HasOverlay) {
 					mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.FOOD_BAR_OVERLAY));
-					AbstractGui.blit(new MatrixStack(), foodPosX - 90, BetterOverlay.foodPosY, 0, 0, 0, 90, 10, 10, 90);
+					AbstractGui.blit(new MatrixStack(), foodPosX - 90, BetterOverlay.foodPosY + BetterOverlay.SurviveOffsetY, 0, 0, 0, 90, 10, 10, 90);
 				}
 
 				if (!textDisabled) {
@@ -955,7 +982,7 @@ public class BetterOverlay {
 					 * 
 					 ***********************************/
 
-					mc.fontRenderer.drawString(new MatrixStack(), foodFinal, foodPosX - 45 - stringWidth / 2, foodPosY + 1, 0xFFFFFFFF);
+					mc.fontRenderer.drawString(new MatrixStack(), foodFinal, foodPosX - 45 - stringWidth / 2, foodPosY + 1 + BetterOverlay.SurviveOffsetY, 0xFFFFFFFF);
 				}
 			}
 		}
@@ -1117,7 +1144,7 @@ public class BetterOverlay {
 
 			}
 		}
-		
+
 		/***********************************
 		 * 
 		 * Scaling down everything that get's renderer from this point forward
@@ -1125,7 +1152,7 @@ public class BetterOverlay {
 		 ***********************************/
 
 		RenderSystem.scalef(0.2F, 0.2F, 0.2F);
-		
+
 		/***********************************
 		 * 
 		 * Binding Left Shield image to the texture manager
@@ -1140,7 +1167,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.blit(new MatrixStack(), leftShieldPosX * 5, leftShieldPosY * 5, 0, 0, 0, 64, 64, 64, 64);
+		AbstractGui.blit(new MatrixStack(), leftShieldPosX * 5, leftShieldPosY * 5 + BetterOverlay.SurviveOffsetY, 0, 0, 0, 64, 64, 64, 64);
 
 		/***********************************
 		 * 
@@ -1156,7 +1183,7 @@ public class BetterOverlay {
 		 * 
 		 ***********************************/
 
-		AbstractGui.blit(new MatrixStack(), rightShieldPosX * 5, rightShieldPosY * 5, 0, 0, 0, 64, 64, 64, 64);
+		AbstractGui.blit(new MatrixStack(), rightShieldPosX * 5, rightShieldPosY * 5 + BetterOverlay.SurviveOffsetY, 0, 0, 0, 64, 64, 64, 64);
 
 		/***********************************
 		 * 
@@ -1166,7 +1193,6 @@ public class BetterOverlay {
 
 		RenderSystem.scalef(5.0F, 5.0F, 5.0F);
 
-		
 		/***********************************
 		 * 
 		 * Disable image transparency
@@ -1333,7 +1359,7 @@ public class BetterOverlay {
 			 * 
 			 ***********************************/
 
-			mc.fontRenderer.drawString(new MatrixStack(), playerLevelText, (expPosX + 93 - mc.fontRenderer.getStringWidth(playerLevelText) / 2) * 1.25F, (expPosY + 5) * 1.25F, 0xFFFFFFFF);
+			mc.fontRenderer.drawString(new MatrixStack(), playerLevelText, (expPosX + 93 - mc.fontRenderer.getStringWidth(playerLevelText) / 2) * 1.25F, (expPosY + 5) * 1.25F + BetterOverlay.SurviveOffsetY, 0xFFFFFFFF);
 
 			/***********************************
 			 * 
@@ -1433,7 +1459,7 @@ public class BetterOverlay {
 			 * 
 			 ***********************************/
 
-			AbstractGui.blit(new MatrixStack(), airPosX, airPosY, 0, 0, 0, 182, 16, 16, 182);
+			AbstractGui.blit(new MatrixStack(), airPosX, airPosY + BetterOverlay.SurviveOffsetY, 0, 0, 0, 182, 16, 16, 182);
 
 			/***********************************
 			 * 
@@ -1457,7 +1483,7 @@ public class BetterOverlay {
 				 * 
 				 ***********************************/
 
-				AbstractGui.blit(new MatrixStack(), airPosX + 1, airPosY + 1, 0, 0, 0, k, 14, 14, 180);
+				AbstractGui.blit(new MatrixStack(), airPosX + 1, airPosY + 1 + BetterOverlay.SurviveOffsetY, 0, 0, 0, k, 14, 14, 180);
 			}
 
 			/***********************************
@@ -1468,7 +1494,7 @@ public class BetterOverlay {
 
 			if (BetterOverlay.HasOverlay) {
 				mc.getTextureManager().bindTexture(BetterUXResources.getResourceOf(BetterUXResources.WATER_BREATING_BAR_OVERLAY));
-				AbstractGui.blit(new MatrixStack(), airPosX, airPosY, 0, 0, 0, 182, 16, 16, 182);
+				AbstractGui.blit(new MatrixStack(), airPosX, airPosY + BetterOverlay.SurviveOffsetY, 0, 0, 0, 182, 16, 16, 182);
 			}
 
 			/***********************************
@@ -1840,6 +1866,33 @@ public class BetterOverlay {
 
 		updateEffectsPosX();
 		updateEffectsPosY();
+
+		/***********************************
+		 * 
+		 * Update temp
+		 * 
+		 ***********************************/
+
+		updateTempPosX();
+		updateTempPosY();
+		
+		/***********************************
+		 * 
+		 * Update energy
+		 * 
+		 ***********************************/
+
+		updateEnergyPosX();
+		updateEnergyPosY();
+		
+		/***********************************
+		 * 
+		 * Update hydration
+		 * 
+		 ***********************************/
+
+		updateHydrationPosX();
+		updateHydrationPosY();
 	}
 
 	/***********************************
@@ -2076,6 +2129,84 @@ public class BetterOverlay {
 		}
 	}
 
+	/***********************************
+	 * 
+	 * Update Temp
+	 * 
+	 ***********************************/
+
+	public static void updateTempPosX() {
+		tempPosX = mc.getMainWindow().getScaledWidth() / 2 + TempPosX;
+		if (tempPosX < 0) {
+			tempPosX = 0;
+		}
+		if (tempPosX > mc.getMainWindow().getScaledWidth() - 40) {
+			tempPosX = mc.getMainWindow().getScaledWidth() - 40;
+		}
+	}
+
+	public static void updateTempPosY() {
+		tempPosY = mc.getMainWindow().getScaledHeight() + TempPosY;
+		if (tempPosY < 0) {
+			tempPosY = 0;
+		}
+		if (tempPosY > mc.getMainWindow().getScaledHeight() - 40) {
+			tempPosY = mc.getMainWindow().getScaledHeight() - 40;
+		}
+	}
+	
+	/***********************************
+	 * 
+	 * Update Energy
+	 * 
+	 ***********************************/
+
+	public static void updateEnergyPosX() {
+		energyPosX = mc.getMainWindow().getScaledWidth() / 2 + EnergyPosX;
+		if (energyPosX < 90) {
+			energyPosX = 90;
+		}
+		if (energyPosX > mc.getMainWindow().getScaledWidth()) {
+			energyPosX = mc.getMainWindow().getScaledWidth();
+		}
+	}
+
+	public static void updateEnergyPosY() {
+		energyPosY = mc.getMainWindow().getScaledHeight() + EnergyPosY;
+		if (energyPosY < 0) {
+			energyPosY = 0;
+		}
+		if (energyPosY > mc.getMainWindow().getScaledHeight() - 10) {
+			energyPosY = mc.getMainWindow().getScaledHeight() - 10;
+		}
+	}
+	
+	/***********************************
+	 * 
+	 * Update Hydration
+	 * 
+	 ***********************************/
+
+	public static void updateHydrationPosX() {
+		hydrationPosX = mc.getMainWindow().getScaledWidth() / 2 + HydrationPosX;
+		if (hydrationPosX < 0) {
+			hydrationPosX = 0;
+		}
+		if (hydrationPosX > mc.getMainWindow().getScaledWidth() - 90) {
+			hydrationPosX = mc.getMainWindow().getScaledWidth() - 90;
+		}
+	}
+
+	public static void updateHydrationPosY() {
+		hydrationPosY = mc.getMainWindow().getScaledHeight() + HydrationPosY;
+		if (hydrationPosY < 0) {
+			hydrationPosY = 0;
+		}
+		if (hydrationPosY > mc.getMainWindow().getScaledHeight() - 10) {
+			hydrationPosY = mc.getMainWindow().getScaledHeight() - 10;
+		}
+	}
+
 	@SuppressWarnings({ "deprecation", "unused" })
 	public static void renderLeftShieldText(List<String> p_renderTooltip_1_, int p_renderTooltip_2_, int p_renderTooltip_3_, FontRenderer font) {
 		if (!p_renderTooltip_1_.isEmpty()) {
@@ -2213,7 +2344,7 @@ public class BetterOverlay {
 			RenderSystem.enableRescaleNormal();
 		}
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	public static void fillGradient(int p_fillGradient_1_, int p_fillGradient_2_, int p_fillGradient_3_, int p_fillGradient_4_, int p_fillGradient_5_, int p_fillGradient_6_) {
 		float f = (float) (p_fillGradient_5_ >> 24 & 255) / 255.0F;

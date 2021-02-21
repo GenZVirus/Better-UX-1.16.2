@@ -42,6 +42,12 @@ public class XMLFileJava {
 	private static final int default_BossBarPosY = 0;
 	private static final int default_EffectsPosX = 0;
 	private static final int default_EffectsPosY = 0;
+	private static final int default_TempPosX = 91;
+	private static final int default_TempPosY = -ForgeIngameGui.left_height;
+	private static final int default_EnergyPosX = 91;
+	private static final int default_EnergyPosY = -ForgeIngameGui.left_height - 11;
+	private static final int default_HydrationPosX = -91;
+	private static final int default_HydrationPosY = -ForgeIngameGui.left_height - 11;
 	private static final String default_textDisabled = "false";
 	private static final String default_hasOverlay = "false";
 	private static final String default_Enabled_or_Disabled = "enabled";
@@ -172,15 +178,45 @@ public class XMLFileJava {
 			soundEffects.appendChild(document.createTextNode(default_soundeffects));
 			root.appendChild(soundEffects);
 
-			// Enabled or Disabled
+			// Effects pos x
 			Element effectsPosX = document.createElement("EffectsPosX");
 			effectsPosX.appendChild(document.createTextNode(Integer.toString(default_EffectsPosX)));
 			root.appendChild(effectsPosX);
 
-			// Enabled or Disabled
+			// Effects pos y
 			Element effectsPosY = document.createElement("EffectsPosY");
 			effectsPosY.appendChild(document.createTextNode(Integer.toString(default_EffectsPosY)));
 			root.appendChild(effectsPosY);
+
+			// Survive Temp pos x
+			Element tempPosX = document.createElement("TempPosX");
+			tempPosX.appendChild(document.createTextNode(Integer.toString(default_TempPosX)));
+			root.appendChild(tempPosX);
+
+			// Survive Temp pos y
+			Element tempPosY = document.createElement("TempPosY");
+			tempPosY.appendChild(document.createTextNode(Integer.toString(default_TempPosY)));
+			root.appendChild(tempPosY);
+
+			// Survive Energy pos x
+			Element energyPosX = document.createElement("EnergyPosX");
+			energyPosX.appendChild(document.createTextNode(Integer.toString(default_EnergyPosX)));
+			root.appendChild(energyPosX);
+
+			// Survive Energy pos y
+			Element energyPosY = document.createElement("EnergyPosy");
+			energyPosY.appendChild(document.createTextNode(Integer.toString(default_EnergyPosY)));
+			root.appendChild(energyPosY);
+
+			// Survive Hydration pos x
+			Element hydrationPosX = document.createElement("HydrationPosX");
+			hydrationPosX.appendChild(document.createTextNode(Integer.toString(default_HydrationPosX)));
+			root.appendChild(hydrationPosX);
+
+			// Survive Hydration pos y
+			Element hydrationPosY = document.createElement("HydrationPosy");
+			hydrationPosY.appendChild(document.createTextNode(Integer.toString(default_HydrationPosY)));
+			root.appendChild(hydrationPosY);
 
 			// create the xml file
 			// transform the DOM Object to an XML File
@@ -308,6 +344,12 @@ public class XMLFileJava {
 		XMLFileJava.editElement("SoundEffects", default_soundeffects);
 		XMLFileJava.editElement("EffectsPosX", Integer.toString(default_EffectsPosX));
 		XMLFileJava.editElement("EffectsPosY", Integer.toString(default_EffectsPosY));
+		XMLFileJava.editElement("TempPosX", Integer.toString(default_TempPosX));
+		XMLFileJava.editElement("TempPosY", Integer.toString(default_TempPosY));
+		XMLFileJava.editElement("EnergyPosX", Integer.toString(default_EnergyPosX));
+		XMLFileJava.editElement("EnergyPosY", Integer.toString(default_EnergyPosY));
+		XMLFileJava.editElement("HydrationPosX", Integer.toString(default_HydrationPosX));
+		XMLFileJava.editElement("HydrationPosY", Integer.toString(default_HydrationPosY));
 	}
 
 	private static void resetElement(String elementTag) {
@@ -357,6 +399,18 @@ public class XMLFileJava {
 			XMLFileJava.editElement("EffectsPosX", Integer.toString(default_EffectsPosX));
 		} else if (elementTag.contentEquals("EffectsPosY")) {
 			XMLFileJava.editElement("EffectsPosY", Integer.toString(default_EffectsPosY));
+		} else if (elementTag.contentEquals("TempPosX")) {
+			XMLFileJava.editElement("TempPosX", Integer.toString(default_TempPosX));
+		} else if (elementTag.contentEquals("TempPosY")) {
+			XMLFileJava.editElement("TempPosY", Integer.toString(default_TempPosY));
+		} else if (elementTag.contentEquals("EnergyPosX")) {
+			XMLFileJava.editElement("EnergyPosX", Integer.toString(default_EnergyPosX));
+		} else if (elementTag.contentEquals("EnergyPosY")) {
+			XMLFileJava.editElement("EnergyPosY", Integer.toString(default_EnergyPosY));
+		} else if (elementTag.contentEquals("HydrationPosX")) {
+			XMLFileJava.editElement("HydrationPosX", Integer.toString(default_HydrationPosX));
+		} else if (elementTag.contentEquals("HydrationPosY")) {
+			XMLFileJava.editElement("HydrationPosY", Integer.toString(default_HydrationPosY));
 		}
 	}
 
@@ -385,6 +439,12 @@ public class XMLFileJava {
 		BetterOverlay.soundEffects = Boolean.parseBoolean(XMLFileJava.readElement("SoundEffects"));
 		BetterOverlay.EffectsPosX = Integer.parseInt(XMLFileJava.readElement("EffectsPosX"));
 		BetterOverlay.EffectsPosY = Integer.parseInt(XMLFileJava.readElement("EffectsPosY"));
+		BetterOverlay.TempPosX = Integer.parseInt(XMLFileJava.readElement("TempPosX"));
+		BetterOverlay.TempPosY = Integer.parseInt(XMLFileJava.readElement("TempPosY"));
+		BetterOverlay.EnergyPosX = Integer.parseInt(XMLFileJava.readElement("EnergyPosX"));
+		BetterOverlay.EnergyPosY = Integer.parseInt(XMLFileJava.readElement("EnergyPosY"));
+		BetterOverlay.HydrationPosX = Integer.parseInt(XMLFileJava.readElement("HydrationPosX"));
+		BetterOverlay.HydrationPosY = Integer.parseInt(XMLFileJava.readElement("HydrationPosY"));
 		BetterOverlay.updatePositions();
 	}
 
@@ -413,6 +473,12 @@ public class XMLFileJava {
 		XMLFileJava.editElement("SoundEffects", Boolean.toString(BetterOverlay.soundEffects));
 		XMLFileJava.editElement("EffectsPosX", Integer.toString(BetterOverlay.EffectsPosX));
 		XMLFileJava.editElement("EffectsPosY", Integer.toString(BetterOverlay.EffectsPosY));
+		XMLFileJava.editElement("TempPosX", Integer.toString(BetterOverlay.TempPosX));
+		XMLFileJava.editElement("TempPosY", Integer.toString(BetterOverlay.TempPosY));
+		XMLFileJava.editElement("EnergyPosX", Integer.toString(BetterOverlay.EnergyPosX));
+		XMLFileJava.editElement("EnergyPosY", Integer.toString(BetterOverlay.EnergyPosY));
+		XMLFileJava.editElement("HydrationPosX", Integer.toString(BetterOverlay.HydrationPosX));
+		XMLFileJava.editElement("HydrationPosy", Integer.toString(BetterOverlay.HydrationPosY));
 	}
 
 }
